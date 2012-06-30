@@ -54,7 +54,17 @@ using Microsoft.Xna.Framework.Audio;
 		private static MediaState _mediaState = MediaState.Stopped;
 		private static float _volume = 1.0f;
 		private static bool _looping = true;
-		
+	
+        public class MediaQueue {
+            public Song ActiveSong {
+                get {
+                    return _song;
+                }
+            }
+        }
+
+        public static MediaQueue Queue = new MediaQueue();
+
         public static void Pause()
         {
 			if (_song != null)
@@ -66,7 +76,7 @@ using Microsoft.Xna.Framework.Audio;
 
         public static void Play(Song song)
         {
-        		Stop ();
+            Stop ();
 			if ( song != null )
 			{
 				_song = song;

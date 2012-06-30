@@ -192,54 +192,112 @@ namespace Microsoft.Xna.Framework.GamerServices
 					"Gamer services functionality has not been initialized.");
 		}
 
-		public static IAsyncResult BeginShowKeyboardInput (
-			PlayerIndex player, string title, string description, string defaultText,
-			AsyncCallback callback, Object state)
-		{
-			AssertInitialised ();
-			return BeginShowKeyboardInput(player, title, description, defaultText, callback, state, false );
-		}
+		delegate string ShowKeyboardInputDelegate(
+         PlayerIndex player,           
+         string title,
+         string description,
+         string defaultText,
+         bool usePasswordMode);
 
-		public static IAsyncResult BeginShowKeyboardInput (
-			PlayerIndex player, string title, string description, string defaultText,
-			AsyncCallback callback, Object state, bool usePasswordMode)
-		{
-			AssertInitialised ();
+        public static string ShowKeyboardInput(
+         PlayerIndex player,           
+         string title,
+         string description,
+         string defaultText,
+         bool usePasswordMode)
+        {
+            string currentResult = defaultText;
+            if (!isMessageBoxShowing)
+            {
 
-			int requestCount = Interlocked.Increment (ref _showKeyboardInputRequestCount);
-			if (requestCount != 1) {
-				Interlocked.Decrement (ref _showKeyboardInputRequestCount);
-				// FIXME: Return the in-progress IAsyncResult?
-				return null;
-			}
+                UIApplication.SharedApplication.InvokeOnMainThread(delegate {
 
-			isVisible = true;
-			var viewController = new KeyboardInputViewController(
-				title, description, defaultText, usePasswordMode);
-			_gameViewController.PresentViewController (viewController, true, () => {});
+                var alertView = new UIAlertView();
+                alertView.Title = description;
 
-			viewController.View.InputAccepted += (sender, e) => {
-				_gameViewController.DismissViewController (true, () => {});
-				Interlocked.Decrement (ref _showKeyboardInputRequestCount);
-			};
+                alertView.AlertViewStyle = usePasswordMode ? UIAlertViewStyle.SecureTextInput : UIAlertViewStyle.PlainTextInput;
+                alertView.AddButton ("Cancel");
+                alertView.AddButton ("OK");
 
-			viewController.View.InputCanceled += (sender, e) => {
-				_gameViewController.DismissViewController (true, () => {});
-				Interlocked.Decrement (ref _showKeyboardInputRequestCount);
-			};
+                //username
+                UITextField textField = alertView.GetTextField(0);
+                textField.Text = defaultText;
+                textField.KeyboardType = UIKeyboardType.Default;
+                textField.ReturnKeyType = UIReturnKeyType.Next;
+                textField.ClearButtonMode = UITextFieldViewMode.WhileEditing;
 
-			return new KeyboardInputAsyncResult (viewController, callback, state);
-		}
+                alertView.Clicked += delegate(object sender, UIButtonEventArgs e)
+                        {
+                            if (e.ButtonIndex == 1)
+                            {
 
-		public static string EndShowKeyboardInput (IAsyncResult result)
-		{
-			AssertInitialised ();
+                                    currentResult = textField.Text;
+                                    isMessageBoxShowing = false;
+                            }
+                        };
 
-			if (!(result is KeyboardInputAsyncResult))
-				throw new ArgumentException ("result");
+                alertView.Dismissed += delegate(object sender, UIButtonEventArgs e)
+                                { 
+                                    currentResult = defaultText;
+                                    isMessageBoxShowing = false;
+                                };
 
-			return (result as KeyboardInputAsyncResult).GetResult();
-		}
+
+                    isMessageBoxShowing = true;
+                    isVisible = isMessageBoxShowing;
+                    alertView.Show();
+                });
+
+                while(isMessageBoxShowing) {
+                    Thread.Sleep(TimeSpan.FromMilliseconds(5));
+                }
+
+                isVisible = isMessageBoxShowing;
+
+                return currentResult;
+            }
+
+            return null;
+        }
+
+        public static IAsyncResult BeginShowKeyboardInput (
+         PlayerIndex player,
+         string title,
+         string description,
+         string defaultText,
+         AsyncCallback callback,
+         Object state)
+        {
+            return BeginShowKeyboardInput(player, title, description, defaultText, callback, state, false );
+        }
+
+        public static IAsyncResult BeginShowKeyboardInput (
+         PlayerIndex player,
+         string title,
+         string description,
+         string defaultText,
+         AsyncCallback callback,
+         Object state,
+         bool usePasswordMode)
+        {
+            ShowKeyboardInputDelegate ski = ShowKeyboardInput;
+
+            return ski.BeginInvoke(player, title, description, defaultText, usePasswordMode, callback, ski);
+        }
+
+        public static string EndShowKeyboardInput (IAsyncResult result)
+        {
+            try 
+            {
+                ShowKeyboardInputDelegate ski = (ShowKeyboardInputDelegate)result.AsyncState; 
+
+                return ski.EndInvoke(result);
+            } 
+            finally 
+            {
+                isVisible = false;
+            }           
+        }
 
 		delegate Nullable<int> ShowMessageBoxDelegate(
 			string title, string text, IEnumerable<string> buttons, int focusButton, MessageBoxIcon icon);
