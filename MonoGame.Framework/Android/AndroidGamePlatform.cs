@@ -82,6 +82,8 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 
+using GL11 = OpenTK.Graphics.ES11.GL;
+
 namespace Microsoft.Xna.Framework
 {
     class AndroidGamePlatform : GamePlatform
@@ -95,9 +97,13 @@ namespace Microsoft.Xna.Framework
             AndroidGameActivity.Resumed += Activity_Resumed;
 
             Window = new AndroidGameWindow(Game.Activity, game);
+
+			string model = Android.OS.Build.Model;
+			runningOnEmulator = string.IsNullOrEmpty(model) ? false : model.Contains("sdk");
         }
 
         private bool _initialized;
+		private bool runningOnEmulator = false;
         public static bool IsPlayingVdeo { get; set; }
 
         public override void Exit()
@@ -141,6 +147,9 @@ namespace Microsoft.Xna.Framework
 
         public override void BeforeInitialize()
         {
+            // TODO: Determine whether device natural orientation is Portrait or Landscape for OrientationListener
+            //SurfaceOrientation currentOrient = Game.Activity.WindowManager.DefaultDisplay.Rotation;
+
             switch (Window.Context.Resources.Configuration.Orientation)
             {
                 case Android.Content.Res.Orientation.Portrait:
@@ -189,11 +198,13 @@ namespace Microsoft.Xna.Framework
         {
             if (!IsActive)
             {
-                IsActive = true;
+				IsActive = true;
                 Window.Resume();
                 Accelerometer.Resume();
                 Sound.ResumeAll();
                 MediaPlayer.Resume();
+				if(!Window.IsFocused)
+		           Window.RequestFocus();
             }
         }
 
@@ -202,8 +213,9 @@ namespace Microsoft.Xna.Framework
         {
             if (IsActive)
             {
-                IsActive = false;
+				IsActive = false;
                 Window.Pause();
+				Window.ClearFocus();
                 Accelerometer.Pause();
                 Sound.PauseAll();
                 MediaPlayer.Pause();
@@ -217,7 +229,7 @@ namespace Microsoft.Xna.Framework
 		
 		public override void Log(string Message) 
 		{
-#if LOGGING
+#if !LOGGING
 			Android.Util.Log.Debug("MonoGameDebug", Message);
 #endif
 		}
@@ -231,7 +243,21 @@ namespace Microsoft.Xna.Framework
         {
             try
             {
-                Window.SwapBuffers();
+				if (this.Window.GLContextVersion == OpenTK.Graphics.GLContextVersion.Gles2_0)
+				{
+					Window.SwapBuffers();
+				}
+				else
+				{
+					if (!runningOnEmulator)
+					{
+						Window.SwapBuffers();
+					}
+					else
+					{
+					   GL11.Flush();
+					}
+				}
             }
             catch (Exception ex)
             {

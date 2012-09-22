@@ -1,7 +1,7 @@
-#region License
+﻿#region License
 /*
 Microsoft Public License (Ms-PL)
-XnaTouch - Copyright © 2009 The XnaTouch Team
+MonoGame - Copyright © 2009 The MonoGame Team
 
 All rights reserved.
 
@@ -37,29 +37,92 @@ permitted under your local laws, the contributors exclude the implied warranties
 purpose and non-infringement.
 */
 #endregion License
-
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Tao.Sdl;
 
-namespace Microsoft.Xna.Framework
+namespace Microsoft.Xna.Framework.Input
 {
-	[Flags]
-	public enum DisplayOrientation
-	{
-		/// <summary>
-		/// In Xna, this value is Default = 0. The effect of setting
-		/// GraphicsDeviceManager.SupportedOrientations = Default is the same as setting
-		/// GraphicsDeviceManager.SupportedOrientations = LandscapeLeft | LandscapeRight.
-		/// </summary>
-		Default = 1,
-		LandscapeLeft = 2,
-		LandscapeRight = 4,
-		Portrait = 8,
-		// iPhone specific Orientations
-		FaceDown = 16,
-		FaceUp = 32,
-		// Android can also use this orientation
-		PortraitUpsideDown = 64,
-		Unknown = 128,
-	}
-}
+    public class Joystick
+    {
+        private int id;
+        private IntPtr device;
+        public bool Open { get; private set; }
+        public string Name { get; private set; }
+        public PadConfig Config { get; private set; }
+        public Capabilities Details { get; private set; }
 
+        public Joystick(int id)
+        {
+            // TODO: Complete member initialization
+            this.id = id;
+            this.device = Tao.Sdl.Sdl.SDL_JoystickOpen(id);
+            this.Open = true;
+            this.Name = Tao.Sdl.Sdl.SDL_JoystickName(id);
+            this.Details = new Capabilities(this.device);
+            this.Config = new PadConfig(this.Name, id);
+            this.SetDefaults(this.Details);
+        }
+
+        private void SetDefaults(Capabilities capabilities)
+        {
+            if (capabilities != null)
+            {
+                if (capabilities.NumberOfAxis > 1)
+                {
+                    this.Config.LeftStick.X.AssignAxis(0, false);
+                    this.Config.LeftStick.Y.AssignAxis(1, false);
+                }
+                if (capabilities.NumberOfPovHats > 0)
+                {
+                    this.Config.Dpad.AssignPovHat(0);
+                }
+                if (capabilities.NumberOfButtons > 0)
+                {
+                    for (int i = 0; i < capabilities.NumberOfButtons; i++)
+                    {
+                        Input input = this.Config[i];
+                        if (input != null)
+                        {
+                            input.ID = i;
+                            input.Negative = false;
+                            input.Type = InputType.Button;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        public int ID { get { return id; } }
+
+        public static bool Init()
+        {
+            // only initialise the Joystick part of SDL
+            return Sdl.SDL_Init(Sdl.SDL_INIT_JOYSTICK) == 0;
+        }
+
+        public static List<Joystick> GrabJoysticks()
+        {
+            int num = Tao.Sdl.Sdl.SDL_NumJoysticks();
+            List<Joystick> list = new List<Joystick>();
+            Tao.Sdl.Sdl.SDL_JoystickEventState(0);
+            for (int i = 0; i < num; i++)
+            {
+                list.Add(new Joystick(i));
+            }
+            return list;
+
+        }
+
+
+
+        internal static void Cleanup()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+}

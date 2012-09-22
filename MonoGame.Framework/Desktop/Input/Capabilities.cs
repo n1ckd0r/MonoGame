@@ -1,7 +1,7 @@
-#region License
+﻿#region License
 /*
 Microsoft Public License (Ms-PL)
-XnaTouch - Copyright © 2009 The XnaTouch Team
+MonoGame - Copyright © 2009 The MonoGame Team
 
 All rights reserved.
 
@@ -37,29 +37,27 @@ permitted under your local laws, the contributors exclude the implied warranties
 purpose and non-infringement.
 */
 #endregion License
-
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace Microsoft.Xna.Framework
+namespace Microsoft.Xna.Framework.Input
 {
-	[Flags]
-	public enum DisplayOrientation
-	{
-		/// <summary>
-		/// In Xna, this value is Default = 0. The effect of setting
-		/// GraphicsDeviceManager.SupportedOrientations = Default is the same as setting
-		/// GraphicsDeviceManager.SupportedOrientations = LandscapeLeft | LandscapeRight.
-		/// </summary>
-		Default = 1,
-		LandscapeLeft = 2,
-		LandscapeRight = 4,
-		Portrait = 8,
-		// iPhone specific Orientations
-		FaceDown = 16,
-		FaceUp = 32,
-		// Android can also use this orientation
-		PortraitUpsideDown = 64,
-		Unknown = 128,
-	}
-}
+    public class Capabilities
+    {
+        public Capabilities(IntPtr device)
+        {
+            // TODO: Complete member initialization            
+            this.NumberOfAxis = Tao.Sdl.Sdl.SDL_JoystickNumAxes(device);
+            this.NumberOfButtons = Tao.Sdl.Sdl.SDL_JoystickNumButtons(device);
+            this.NumberOfPovHats = Tao.Sdl.Sdl.SDL_JoystickNumHats(device);
+        }
 
+
+        public int NumberOfAxis { get; private set; }
+        public int NumberOfButtons { get; private set; }
+        public int NumberOfPovHats { get; private set; }
+
+    }
+}

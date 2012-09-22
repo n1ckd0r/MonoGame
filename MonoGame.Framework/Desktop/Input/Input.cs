@@ -1,7 +1,7 @@
-#region License
+﻿#region License
 /*
 Microsoft Public License (Ms-PL)
-XnaTouch - Copyright © 2009 The XnaTouch Team
+MonoGame - Copyright © 2009 The MonoGame Team
 
 All rights reserved.
 
@@ -37,29 +37,65 @@ permitted under your local laws, the contributors exclude the implied warranties
 purpose and non-infringement.
 */
 #endregion License
-
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace Microsoft.Xna.Framework
+namespace Microsoft.Xna.Framework.Input
 {
-	[Flags]
-	public enum DisplayOrientation
-	{
-		/// <summary>
-		/// In Xna, this value is Default = 0. The effect of setting
-		/// GraphicsDeviceManager.SupportedOrientations = Default is the same as setting
-		/// GraphicsDeviceManager.SupportedOrientations = LandscapeLeft | LandscapeRight.
-		/// </summary>
-		Default = 1,
-		LandscapeLeft = 2,
-		LandscapeRight = 4,
-		Portrait = 8,
-		// iPhone specific Orientations
-		FaceDown = 16,
-		FaceUp = 32,
-		// Android can also use this orientation
-		PortraitUpsideDown = 64,
-		Unknown = 128,
-	}
-}
+    public enum InputType { PovUp = 1, Button = 16, Axis = 32, PovDown = 4, PovLeft = 8, PovRight = 2, None = -1 };
 
+    public class Input
+    {
+        public int ID;
+        public InputType Type;
+        public bool Negative { get; set; }
+
+
+        internal bool ReadBool(IntPtr device, short DeadZone)
+        {
+            switch (Type)
+            {
+                case InputType.Axis:
+                    var axis = Tao.Sdl.Sdl.SDL_JoystickGetAxis(device, this.ID);
+                    if (this.Negative)
+                    {
+                        return (axis < -DeadZone);
+                    }
+                    return (axis > DeadZone);
+                case InputType.Button:
+                    return ((Tao.Sdl.Sdl.SDL_JoystickGetButton(device, this.ID) > 0) ^ this.Negative);
+                case InputType.PovUp:
+                case InputType.PovDown:
+                case InputType.PovLeft:
+                case InputType.PovRight:
+                    // Cast the type as an int to get the correct sdl mask for the hat
+                    return (((Tao.Sdl.Sdl.SDL_JoystickGetHat(device, this.ID) & (int)Type) > 0) ^ this.Negative);
+                case InputType.None:
+                default:
+                    return false;
+            }
+        }
+
+        internal float ReadFloat(IntPtr device)
+        {
+            float mask = this.Negative ? -1f : 1f;
+            switch (this.Type)
+            {
+                case InputType.Axis:
+                    float range = this.Negative ? ((float)(-32768)) : ((float)0x7fff);
+                    return (((float)Tao.Sdl.Sdl.SDL_JoystickGetAxis(device, this.ID)) / range);
+                case InputType.Button:
+                    return (Tao.Sdl.Sdl.SDL_JoystickGetButton(device, this.ID) * mask);
+                case InputType.PovUp:
+                case InputType.PovDown:
+                case InputType.PovLeft:
+                case InputType.PovRight:
+                    return ((Tao.Sdl.Sdl.SDL_JoystickGetHat(device, this.ID) & (int)Type) * mask);
+            }
+            return 0f;
+
+        }
+    }
+}

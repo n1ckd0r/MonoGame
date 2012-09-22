@@ -1,7 +1,7 @@
-#region License
+﻿#region License
 /*
 Microsoft Public License (Ms-PL)
-XnaTouch - Copyright © 2009 The XnaTouch Team
+MonoGame - Copyright © 2009 The MonoGame Team
 
 All rights reserved.
 
@@ -37,29 +37,39 @@ permitted under your local laws, the contributors exclude the implied warranties
 purpose and non-infringement.
 */
 #endregion License
-
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace Microsoft.Xna.Framework
+namespace Microsoft.Xna.Framework.Input
 {
-	[Flags]
-	public enum DisplayOrientation
-	{
-		/// <summary>
-		/// In Xna, this value is Default = 0. The effect of setting
-		/// GraphicsDeviceManager.SupportedOrientations = Default is the same as setting
-		/// GraphicsDeviceManager.SupportedOrientations = LandscapeLeft | LandscapeRight.
-		/// </summary>
-		Default = 1,
-		LandscapeLeft = 2,
-		LandscapeRight = 4,
-		Portrait = 8,
-		// iPhone specific Orientations
-		FaceDown = 16,
-		FaceUp = 32,
-		// Android can also use this orientation
-		PortraitUpsideDown = 64,
-		Unknown = 128,
-	}
-}
+    public class Axis
+    {
+        public Axis()
+        {
+            this.Negative = new Input();
+            this.Positive = new Input();            
+        }
 
+        public Input Negative { get; set; }
+        public Input Positive { get; set; }
+        public InputType Type { get; set; }
+
+        public float ReadAxis(IntPtr device)
+        {
+            return (this.Positive.ReadFloat(device) - this.Negative.ReadFloat(device));
+        }
+
+
+        internal void AssignAxis(int id, bool negative)
+        {
+            this.Negative.ID = id;
+            this.Negative.Negative = !negative;
+            this.Negative.Type = InputType.Axis;
+            this.Positive.ID = id;
+            this.Positive.Negative = negative;
+            this.Positive.Type = InputType.Axis;
+        }
+    }
+}

@@ -1,7 +1,7 @@
-#region License
+﻿#region License
 /*
 Microsoft Public License (Ms-PL)
-XnaTouch - Copyright © 2009 The XnaTouch Team
+MonoGame - Copyright © 2009 The MonoGame Team
 
 All rights reserved.
 
@@ -37,29 +37,39 @@ permitted under your local laws, the contributors exclude the implied warranties
 purpose and non-infringement.
 */
 #endregion License
-
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace Microsoft.Xna.Framework
+namespace Microsoft.Xna.Framework.Input
 {
-	[Flags]
-	public enum DisplayOrientation
-	{
-		/// <summary>
-		/// In Xna, this value is Default = 0. The effect of setting
-		/// GraphicsDeviceManager.SupportedOrientations = Default is the same as setting
-		/// GraphicsDeviceManager.SupportedOrientations = LandscapeLeft | LandscapeRight.
-		/// </summary>
-		Default = 1,
-		LandscapeLeft = 2,
-		LandscapeRight = 4,
-		Portrait = 8,
-		// iPhone specific Orientations
-		FaceDown = 16,
-		FaceUp = 32,
-		// Android can also use this orientation
-		PortraitUpsideDown = 64,
-		Unknown = 128,
-	}
-}
+    public class Settings
+    {
+        // Fields
+        private List<PadConfig> players;
 
+        // Methods
+        public Settings()
+        {
+            this.players = new List<PadConfig>();
+            this.players.Add(null);
+            this.players.Add(null);
+            this.players.Add(null);
+            this.players.Add(null);            
+        }
+
+        // Properties
+        public PadConfig this[int index]
+        {
+            get { return this.players[index]; }
+            set { this.players[index] = value; }
+        }
+        public PadConfig Player1 { get; set; }
+        public PadConfig Player2 { get; set; }
+        public PadConfig Player3 { get; set; }
+        public PadConfig Player4 { get; set; }
+
+    }
+
+}
