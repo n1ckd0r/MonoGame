@@ -514,7 +514,7 @@ namespace Microsoft.Xna.Framework.GamerServices
 		}
 		
 		
-		public static void ShowMatchMaker()
+		/*public static void ShowMatchMaker()
 		{
 			AssertInitialised ();
 
@@ -564,7 +564,7 @@ namespace Microsoft.Xna.Framework.GamerServices
 					}				
 			    }
 			}
-		}
+		}*/
 
 		public static IAsyncResult BeginShowStorageDeviceSelector( AsyncCallback callback, Object state )
 		{

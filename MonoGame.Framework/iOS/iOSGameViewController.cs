@@ -171,5 +171,9 @@ namespace Microsoft.Xna.Framework {
 			_defaultSupportedOrientations = orientations;
 			return _defaultSupportedOrientations.Value;
 		}
+
+        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() {
+            return UIInterfaceOrientationMask.Landscape;
+        }
 	}
 }
