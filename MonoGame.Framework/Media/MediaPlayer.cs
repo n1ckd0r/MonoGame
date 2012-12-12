@@ -77,22 +77,25 @@ using Microsoft.Xna.Framework.Audio;
         public static void Play(Song song)
         {
             Stop ();
-			if ( song != null )
+
+            _song = song;
+            _song.Volume = _volume;
+            _song.Loop = _looping;
+            _mediaState = MediaState.Playing;
+
+			if ( song != null  && !IsMuted)
 			{
-				_song = song;
-				_song.Volume = _volume;
-				_song.Loop = _looping;
 				_song.Play();
-				_mediaState = MediaState.Playing;
 			}
         }
 
         public static void Resume()
         {
-			if (_song != null)
+            _mediaState = MediaState.Playing;
+
+			if (_song != null && !IsMuted)
 			{
 				_song.Resume();
-				_mediaState = MediaState.Playing;
 			}					
         }
 
@@ -105,34 +108,7 @@ using Microsoft.Xna.Framework.Audio;
 			}
         }
 
-        public static bool IsMuted
-        {
-            get
-            {
-				if (_song != null)
-				{
-					return _song.Volume == 0.0f;
-				}
-				else
-				{
-					return false;
-				}
-            }
-            set
-            {
-				if (_song != null) 
-				{
-					if (value)
-					{
-						_song.Volume = 0.0f;
-					}
-					else 
-					{
-						_song.Volume = _volume;
-					}
-				}
-            }
-        }
+        public static bool IsMuted { get; set; }
 
         public static bool IsRepeating
         {

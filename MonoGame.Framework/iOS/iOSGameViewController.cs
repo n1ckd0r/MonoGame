@@ -108,6 +108,7 @@ namespace Microsoft.Xna.Framework {
 
 		public new iOSGameView View {
 			get { return (iOSGameView) base.View; }
+
 		}
 
 		public override bool ShouldAutorotateToInterfaceOrientation (UIInterfaceOrientation toInterfaceOrientation)

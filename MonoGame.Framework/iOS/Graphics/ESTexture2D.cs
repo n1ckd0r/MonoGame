@@ -124,7 +124,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				height = i;
 			}
 			// TODO: kMaxTextureSize = 1024
-			while((width > 1024) || (height > 1024)) 
+			while((width > 2048) || (height > 2048)) 
 			{
 				width /= 2;
 				height /= 2;
