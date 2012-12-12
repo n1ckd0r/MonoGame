@@ -147,7 +147,12 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
         public int Count
         {
-            get { return _collection.Length; }
+            get {
+                if (_collection == null)
+                    return 0;
+                else
+                    return _collection.Length;
+            }
         }
 
         public bool Remove(TouchLocation item)

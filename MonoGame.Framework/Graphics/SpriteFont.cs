@@ -87,7 +87,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		
 		internal readonly Texture2D _texture;
 
-		internal SpriteFont (
+		public SpriteFont (
 			Texture2D texture, List<Rectangle> glyphBounds, List<Rectangle> cropping, List<char> characters,
 			int lineSpacing, float spacing, List<Vector3> kerning, char? defaultCharacter)
 		{
