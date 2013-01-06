@@ -48,7 +48,7 @@ namespace Microsoft.Xna.Framework
     public static class PowerStatus
     {
         private static BroadcastReceiver _batteryStatusReceiver;
-        private static int _batteryStatus = BatteryManager.BatteryStatusUnknown;
+        private static BatteryStatus _batteryStatus = BatteryManager.BatteryStatusUnknown;
         private static int _batteryLevel;
         private static int _batteryLevelScale = 100;
 
@@ -64,7 +64,7 @@ namespace Microsoft.Xna.Framework
             {
                 _batteryLevel = intent.GetIntExtra("level", 0);
                 _batteryLevelScale = intent.GetIntExtra("scale", 100);
-                _batteryStatus = intent.GetIntExtra("status", BatteryManager.BatteryStatusUnknown);
+                _batteryStatus = (BatteryStatus)intent.GetIntExtra("status", (int)BatteryManager.BatteryStatusUnknown);
             }
         }
 

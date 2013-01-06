@@ -84,6 +84,11 @@ namespace Microsoft.Xna.Framework.Input
                //do nothing
             }
 
+            public void OnAccuracyChanged(Sensor sensor, SensorStatus accuracy)
+            {
+                //do nothing
+            }
+
             public void OnSensorChanged(SensorEvent e)
             {
                 try {
