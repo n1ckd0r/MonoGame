@@ -295,7 +295,7 @@ namespace Microsoft.Xna.Framework
 
         public void Exit()
         {
-            Platform.Exit();
+			Platform.Exit();
         }
 
         public void ResetElapsedTime()
@@ -339,7 +339,7 @@ namespace Microsoft.Xna.Framework
             case GameRunBehavior.Synchronous:
                 Platform.RunLoop();
                 EndRun();
-                OnExiting(this, EventArgs.Empty);
+				DoExiting();
                 break;
             default:
                 throw new NotImplementedException(string.Format(
@@ -348,7 +348,7 @@ namespace Microsoft.Xna.Framework
         }
 
         private DateTime _now;
-        private DateTime _lastUpdate = DateTime.Now;
+        private DateTime _lastUpdate = DateTime.UtcNow;
         private readonly GameTime _gameTime = new GameTime();
         private readonly GameTime _fixedTimeStepTime = new GameTime();
         private TimeSpan _totalTime = TimeSpan.Zero;
@@ -357,7 +357,7 @@ namespace Microsoft.Xna.Framework
         {
             bool doDraw = false;
 
-            _now = DateTime.Now;
+            _now = DateTime.UtcNow;
 
             _gameTime.Update(_now - _lastUpdate);
             _lastUpdate = _now;
@@ -398,7 +398,7 @@ namespace Microsoft.Xna.Framework
 
             if (IsFixedTimeStep)
             {
-                var currentTime = (DateTime.Now - _lastUpdate) + _totalTime;
+                var currentTime = (DateTime.UtcNow - _lastUpdate) + _totalTime;
 
                 if (currentTime < TargetElapsedTime)
                 {
@@ -512,7 +512,7 @@ namespace Microsoft.Xna.Framework
             var platform = (GamePlatform)sender;
             platform.AsyncRunLoopEnded -= Platform_AsyncRunLoopEnded;
             EndRun();
-            OnExiting(this, EventArgs.Empty);
+			DoExiting();
         }
 
         private void Platform_Activated(object sender, EventArgs e)
@@ -587,6 +587,11 @@ namespace Microsoft.Xna.Framework
             Platform.BeforeInitialize();
             Initialize();
         }
+
+		internal void DoExiting()
+		{
+			OnExiting(this, EventArgs.Empty);
+		}
 
 #if LINUX
         internal void ResizeWindow(bool changed)

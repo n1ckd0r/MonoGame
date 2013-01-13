@@ -108,6 +108,7 @@ namespace Microsoft.Xna.Framework {
 
 		public new iOSGameView View {
 			get { return (iOSGameView) base.View; }
+
 		}
 
 		public override bool ShouldAutorotateToInterfaceOrientation (UIInterfaceOrientation toInterfaceOrientation)
@@ -171,5 +172,9 @@ namespace Microsoft.Xna.Framework {
 			_defaultSupportedOrientations = orientations;
 			return _defaultSupportedOrientations.Value;
 		}
+
+        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() {
+            return UIInterfaceOrientationMask.Landscape;
+        }
 	}
 }

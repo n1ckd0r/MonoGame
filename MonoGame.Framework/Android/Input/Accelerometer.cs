@@ -46,17 +46,17 @@ using Android.Hardware;
 
 namespace Microsoft.Xna.Framework.Input
 {
-	public static class Accelerometer
-	{
-		private static AccelerometerState _state;
-		private static AccelerometerCapabilities _capabilities = new AccelerometerCapabilities();
+    public static class Accelerometer
+    {
+        private static AccelerometerState _state;
+        private static AccelerometerCapabilities _capabilities = new AccelerometerCapabilities();
         private static SensorManager _sensorManger;
         private static Sensor _sensor;
-		private static Vector3 _accelerometerVector = new Vector3(0, 0, 0);
+        private static Vector3 _accelerometerVector = new Vector3(0, 0, 0);
         private static SensorListener listener = new SensorListener();
-		
-		public static void SetupAccelerometer()
-		{
+        
+        public static void SetupAccelerometer()
+        {
             _sensorManger = (SensorManager)Game.Activity.GetSystemService(Context.SensorService);
             _sensor = _sensorManger.GetDefaultSensor(SensorType.Accelerometer);
 
@@ -67,51 +67,46 @@ namespace Microsoft.Xna.Framework.Input
             else _state = new AccelerometerState { IsConnected = false };
         }
 
-		public static AccelerometerCapabilities GetCapabilities()
+        public static AccelerometerCapabilities GetCapabilities()
         {
-			return _capabilities;
+            return _capabilities;
         }
-		
-		public static AccelerometerState GetState()
-		{
-			return _state;
-		}
+        
+        public static AccelerometerState GetState()
+        {
+            return _state;
+        }
 
         private class SensorListener : Java.Lang.Object, ISensorEventListener
         {
-            public void OnAccuracyChanged(Sensor sensor, int accuracy)
+            public void OnAccuracyChanged(Sensor sensor, SensorStatus status)
             {
                //do nothing
-            }
-
-            public void OnAccuracyChanged(Sensor sensor, SensorStatus accuracy)
-            {
-                //do nothing
             }
 
             public void OnSensorChanged(SensorEvent e)
             {
                 try {
-					
-					if (e != null && e.Sensor.Type == SensorType.Accelerometer) 
-					{
-     				    var values = e.Values;
-				        try 
-						{
-				            if (values != null && values.Count == 3) {
-				                _accelerometerVector.X = values[0];
-				                _accelerometerVector.Y = values[1];
-				                _accelerometerVector.Z = values[2];  
-							    _state.Acceleration = _accelerometerVector;
-				            }
-				        } 
-						finally 
-						{
-				            IDisposable d = values as IDisposable;
-				            if (d != null)
-				                d.Dispose ();
-				        }
-    				}                
+                    
+                    if (e != null && e.Sensor.Type == SensorType.Accelerometer) 
+                    {
+                        var values = e.Values;
+                        try 
+                        {
+                            if (values != null && values.Count == 3) {
+                                _accelerometerVector.X = values[0];
+                                _accelerometerVector.Y = values[1];
+                                _accelerometerVector.Z = values[2];  
+                                _state.Acceleration = _accelerometerVector;
+                            }
+                        } 
+                        finally 
+                        {
+                            IDisposable d = values as IDisposable;
+                            if (d != null)
+                                d.Dispose ();
+                        }
+                    }                
                 }
                 catch (NullReferenceException ex) {
                     //Occassionally an NullReferenceException is thrown when accessing e.Values??

@@ -79,13 +79,12 @@ namespace Microsoft.Xna.Framework.Graphics {
 				"Text contains characters that cannot be resolved by this SpriteFont.";
 		}
 
-		[ThreadStatic]
 		private static Typesetter PerThreadTypesetter;
 
 		private Dictionary<char, Glyph> _glyphs;
 		private Texture2D _texture;
 
-		internal SpriteFont (
+		public SpriteFont (
 			Texture2D texture, List<Rectangle> glyphBounds, List<Rectangle> cropping, List<char> characters,
 			int lineSpacing, float spacing, List<Vector3> kerning, char? defaultCharacter)
 		{

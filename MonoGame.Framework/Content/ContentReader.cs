@@ -139,7 +139,7 @@ namespace Microsoft.Xna.Framework.Content
         }
 
         public T ReadExternalReference<T>()
-		{
+        {
             string externalAssetName = ReadString();
             if (!String.IsNullOrEmpty(externalAssetName))
             {
@@ -148,7 +148,28 @@ namespace Microsoft.Xna.Framework.Content
                 string fullAssetPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.Combine(fullRootPath, assetName)), externalAssetName));
 
 #if ANDROID
-                externalAssetName = fullAssetPath.Substring(fullRootPath.Length + 3);
+                externalAssetName = fullAssetPath.Substring(fullRootPath.Length);
+
+                // Replace Windows path separators with local path separators
+                externalAssetName = externalAssetName.Replace('\\', Path.DirectorySeparatorChar);
+
+                // If the path has .. in it, just pull out one directory from the path
+                while (externalAssetName.Contains(".."))
+                {
+                    var dotIndex = externalAssetName.IndexOf("..");
+
+                    var start = externalAssetName.Substring(0, dotIndex - 2).LastIndexOf(Path.DirectorySeparatorChar);
+
+                    if (start == -1)
+                    {
+                        externalAssetName = externalAssetName.Substring(dotIndex + 3);
+                    }
+                    else {
+                        externalAssetName = externalAssetName.Substring(0, start) +
+                            externalAssetName.Substring(dotIndex + 3);
+                    }
+                   
+                }
 #else				
                 externalAssetName = fullAssetPath.Substring(fullRootPath.Length + 1);
 #endif
