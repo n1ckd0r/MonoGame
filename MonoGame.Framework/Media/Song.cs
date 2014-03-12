@@ -36,10 +36,6 @@ or conditions. You may have additional consumer rights under your local laws whi
 permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular
 purpose and non-infringement.
 */
-using MonoTouch.Foundation;
-using MonoTouch.AVFoundation;
-
-
 #endregion License
 
 using System;
@@ -51,21 +47,14 @@ namespace Microsoft.Xna.Framework.Media
 {
     public class Song : IEquatable<Song>, IDisposable
     {
-		private AVAudioPlayer _sound;
+        private SoundEffectInstance _sound;
 		private string _name;
 		private int _playCount;
 		
 		internal Song(string fileName)
 		{			
 			_name = fileName;
-            var file = NSUrl.FromFilename(fileName);
-
-            _sound = AVAudioPlayer.FromUrl(file);
-
-            if (!_sound.PrepareToPlay())
-            {
-                throw new Exception("Unable to Prepare sound for playback!");
-            }
+            _sound = new SoundEffect(_name).CreateInstance();
 		}
 		
 		public void Dispose()
@@ -121,7 +110,7 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			if ( _sound != null )
 			{
-                _sound.Play();
+                _sound.Resume();
 			}
 		}
 		
@@ -147,7 +136,7 @@ namespace Microsoft.Xna.Framework.Media
 			{
 				if ( _sound != null )
 				{
-                    return _sound.NumberOfLoops == -1;
+                    return _sound.IsLooped;
 				}
 				else
 				{
@@ -158,10 +147,7 @@ namespace Microsoft.Xna.Framework.Media
 			{
 				if ( _sound != null )
 				{
-					if(value)
-                        _sound.NumberOfLoops = -1;
-                    else
-                        _sound.NumberOfLoops = 0;
+                    _sound.IsLooped = value;
 				}
 			}
 		}
