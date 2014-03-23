@@ -9,13 +9,15 @@
     <ProjectTypeGuids>{6BC8ED88-2882-458C-8E55-DFD12B67127B};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <RootNamespace>Lidgren.Network.iOS</RootNamespace>
-    <AssemblyName>Lidgren.Network.iOS</AssemblyName>
+    <AssemblyName>Lidgren.Network</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
     <OutputPath>bin\Debug</OutputPath>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iOS\Debug</OutputPath>
     <DefineConstants>DEBUG;IOS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -26,6 +28,8 @@
     <DebugType>none</DebugType>
     <Optimize>True</Optimize>
     <OutputPath>bin\Release</OutputPath>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iOS\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
@@ -38,6 +42,7 @@
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
   </ItemGroup>
+  <Import Project="$(ProgramFiles)\MSBuild\MonoTouch\Novell.MonoTouch.Common.targets" Condition="'$(windir)' != '' " />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Compile Include="Encryption\INetEncryption.cs" />
@@ -105,6 +110,7 @@
     <Compile Include="NetUnreliableSequencedReceiver.cs" />
     <Compile Include="NetUnreliableUnorderedReceiver.cs" />
     <Compile Include="NetUtility.cs" />
+    <Compile Include="PlatformSocket.cs" />
     <Compile Include="SenderChannelBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -30,6 +30,10 @@ namespace Microsoft.Xna.Framework
 
         public override void OnOrientationChanged(int orientation)
         {
+            // Avoid changing orientation whilst the screen is locked
+            if (ScreenReceiver.ScreenLocked)
+                return;
+
             if (!inprogress)
             {
                 inprogress = true;
@@ -62,7 +66,11 @@ namespace Microsoft.Xna.Framework
                 if ((AndroidGameActivity.Game.Window.GetEffectiveSupportedOrientations() & disporientation) != 0 &&
                      disporientation != AndroidGameActivity.Game.Window.CurrentOrientation)
                 {
+<<<<<<< HEAD
                     AndroidGameActivity.Game.Window.SetOrientation(disporientation);
+=======
+                    AndroidGameActivity.Game.Window.SetOrientation(disporientation, true);
+>>>>>>> 759f782a7fa53be51eb1dd01f17cb4c157ec9fde
                 }
                 inprogress = false;
             }
