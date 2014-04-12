@@ -80,7 +80,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			if(GraphicsDevice.OpenGLESVersion == MonoTouch.OpenGLES.EAGLRenderingAPI.OpenGLES2)
 
 			{
-				GL20.GenFramebuffers(1, ref frameBuffer);
+				GL20.GenFramebuffers(1, out frameBuffer);
 			}
 			else
 			{

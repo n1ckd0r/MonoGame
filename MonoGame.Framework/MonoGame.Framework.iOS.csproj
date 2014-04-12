@@ -10,13 +10,8 @@
     <OutputType>Library</OutputType>
     <Description>XNA implementation for MonoTouch</Description>
     <RootNamespace>Microsoft.Xna.Framework</RootNamespace>
-<<<<<<< HEAD
-    <SynchReleaseVersion>False</SynchReleaseVersion>
-    <ReleaseVersion>1.6</ReleaseVersion>
-=======
     <SynchReleaseVersion>false</SynchReleaseVersion>
     <ReleaseVersion>2.5.0.0</ReleaseVersion>
->>>>>>> 4bf1b0e2479aec82bcc1f333bcdee39f500db8f2
     <MtouchSdkVersion>3.0</MtouchSdkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">

@@ -150,7 +150,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			// modeled after this
 			// http://steinsoft.net/index.php?site=Programming/Code%20Snippets/OpenGL/no9
 			
-			GL.GenTextures(1,ref _textureId);
+			GL.GenTextures(1,out _textureId);
 			GL.BindTexture(All.Texture2D, _textureId);
 			
 			if (_mipmap)
@@ -328,11 +328,11 @@ namespace Microsoft.Xna.Framework.Graphics
 			int renderBufferID = -1;
 			
 			// create framebuffer
-			GL.Oes.GenFramebuffers(1, ref framebufferId);
+			GL.Oes.GenFramebuffers(1, out framebufferId);
 			GL.Oes.BindFramebuffer(All.FramebufferOes, framebufferId);
 			
 			//renderBufferIDs = new int[currentRenderTargets];
-			GL.Oes.GenRenderbuffers(1, ref renderBufferID);
+			GL.Oes.GenRenderbuffers(1, out renderBufferID);
 			
 			// attach the texture to FBO color attachment point
 			GL.Oes.FramebufferTexture2D(All.FramebufferOes, All.ColorAttachment0Oes,
@@ -621,7 +621,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			CGImageAlphaInfo alphaInfo = (CGImageAlphaInfo)((int)CGImageAlphaInfo.PremultipliedLast | (int)CGBitmapFlags.ByteOrderDefault);
 
-			CGBitmapContext bitmap;
+			CGBitmapContext bitmap = null;
 			byte[] mData = GetImageData(0);
 			
 			try 

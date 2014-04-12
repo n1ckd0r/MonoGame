@@ -44,15 +44,6 @@ namespace Microsoft.Xna.Framework.Audio
 			// Get the audio format
 			fileFormat = ext.FileDataFormat;
 
-			// Don't know how to handle sounds with more than 2 channels (i.e. stereo)
-			// Remember that OpenAL sound effects must be mono to be spatialized anyway.
-			if (fileFormat.ChannelsPerFrame > 2) {
-#if DEBUG				
-				Console.WriteLine ("Unsupported Format: Channel count [0] is greater than stereo.", fileFormat.ChannelsPerFrame);
-#endif
-				return null;
-			}
-
 			// The output format must be linear PCM because that's the only type OpenAL knows how to deal with.
 			// Set the client format to 16 bit signed integer (native-endian) data because that is the most
 			// optimal format on iPhone/iPod Touch hardware.
@@ -80,6 +71,15 @@ namespace Microsoft.Xna.Framework.Audio
 			// Copy the output format to the audio description that was passed in so the
 			// info will be returned to the user.
 			audioDescription = outputFormat;
+
+			// Don't know how to handle sounds with more than 2 channels (i.e. stereo)
+			// Remember that OpenAL sound effects must be mono to be spatialized anyway.
+			if (fileFormat.ChannelsPerFrame > 2) {
+				#if DEBUG				
+				Console.WriteLine ("Unsupported Format: Channel count [0] is greater than stereo.", fileFormat.ChannelsPerFrame);
+				#endif
+				return null;
+			}
 
 			return ext;
 		}
