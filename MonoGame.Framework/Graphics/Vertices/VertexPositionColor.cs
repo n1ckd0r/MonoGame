@@ -1,11 +1,19 @@
 using System;
+using System.Runtime.Serialization;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
+    [DataContract]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct VertexPositionColor : IVertexType
 	{
+        [DataMember]
 		public Vector3 Position;
-		public VertexElementColor Color;
+        
+        [DataMember]
+		public Color Color;
+
 		public static readonly VertexDeclaration VertexDeclaration;
 
 		public VertexPositionColor (Vector3 position, Color color)

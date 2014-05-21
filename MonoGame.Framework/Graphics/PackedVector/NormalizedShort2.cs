@@ -68,23 +68,27 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 			return a.Equals (b);
 		}
 
-		public uint PackedValue { 
-			get { 
-				return short2Packed; 
-			} 
-			set { 
-				short2Packed = value; 
-			} 
+        [CLSCompliant(false)]
+        public uint PackedValue
+        {
+            get
+            {
+                return short2Packed;
+            }
+            set
+            {
+                short2Packed = value;
+            } 
 		}
 
 		public override bool Equals (object obj)
 		{
-			throw new NotImplementedException ();
+            return (obj is NormalizedShort2) && Equals((NormalizedShort2)obj);
 		}
 
         public bool Equals(NormalizedShort2 other)
 		{
-			throw new NotImplementedException ();
+            return short2Packed.Equals(other.short2Packed);
 		}
 
 		public override int GetHashCode ()
@@ -94,27 +98,28 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 
 		public override string ToString ()
 		{
-			// not sure what to return here
-			// microsoft returns some funky formatted string
-			return string.Format("{0} / {1}", (short)(short2Packed & 0xFFFF), (short)(short2Packed >> 0x10) );
+            return short2Packed.ToString("X");
 		}
 
 		public Vector2 ToVector2 ()
 		{
+            const float maxVal = 0x7FFF;
+
 			var v2 = new Vector2 ();
-			v2.X = (short)(short2Packed & 0xFFFF);
-			v2.Y = (short)(short2Packed >> 0x10);
+            v2.X = ((short)(short2Packed & 0xFFFF)) / maxVal;
+            v2.Y = (short)(short2Packed >> 0x10) / maxVal;
 			return v2;
 		}
 
 		private static uint PackInTwo (float vectorX, float vectorY)
 		{
 			const float maxPos = 0x7FFF;
-			const float minNeg = ~(int)maxPos;
+            const float minNeg = -maxPos;
 
 			// clamp the value between min and max values
-			var word2 = (uint)((int)Math.Max (Math.Min (vectorX, maxPos), minNeg) & 0xFFFF);
-			var word1 = (uint)(((int)Math.Max (Math.Min (vectorY, maxPos), minNeg) & 0xFFFF) << 0x10);
+            // Round rather than truncate.
+            var word2 = (uint)((int)MathHelper.Clamp((float)Math.Round(vectorX * maxPos), minNeg, maxPos) & 0xFFFF);
+            var word1 = (uint)(((int)MathHelper.Clamp((float)Math.Round(vectorY * maxPos), minNeg, maxPos) & 0xFFFF) << 0x10);
 
 			return (word2 | word1);
 		}
@@ -126,9 +131,11 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 
 		Vector4 IPackedVector.ToVector4 ()
 		{
+            const float maxVal = 0x7FFF;
+
 			var v4 = new Vector4 (0,0,0,1);
-			v4.X = (short)(short2Packed & 0xFFFF);
-			v4.Y = (short)(short2Packed >> 0x10);
+            v4.X = ((short)((short2Packed >> 0x00) & 0xFFFF)) / maxVal;
+            v4.Y = ((short)((short2Packed >> 0x10) & 0xFFFF)) / maxVal;
 			return v4;
 		}
 	}

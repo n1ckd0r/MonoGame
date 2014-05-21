@@ -26,15 +26,25 @@ SOFTWARE.
 #endregion License
 
 using System;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework
 {
+    [DataContract]
     public struct Quaternion : IEquatable<Quaternion>
     {
+        [DataMember]
         public float X;
+
+        [DataMember]
         public float Y;
+      
+        [DataMember]
         public float Z;
+      
+        [DataMember]
         public float W;
+
         static Quaternion identity = new Quaternion(0, 0, 0, 1);
 
         
@@ -801,7 +811,17 @@ namespace Microsoft.Xna.Framework
 
         public override string ToString()
         {
-            throw new NotImplementedException();
+            System.Text.StringBuilder sb = new System.Text.StringBuilder(32);
+            sb.Append("{X:");
+            sb.Append(this.X);
+            sb.Append(" Y:");
+            sb.Append(this.Y);
+            sb.Append(" Z:");
+            sb.Append(this.Z);
+            sb.Append(" W:");
+            sb.Append(this.W);
+            sb.Append("}");
+            return sb.ToString();
         }
 
 		internal Matrix ToMatrix ()

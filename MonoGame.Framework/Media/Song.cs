@@ -1,81 +1,85 @@
-#region License
-/*
-Microsoft Public License (Ms-PL)
-MonoGame - Copyright © 2009 The MonoGame Team
-
-All rights reserved.
-
-This license governs use of the accompanying software. If you use the software, you accept this license. If you do not
-accept the license, do not use the software.
-
-1. Definitions
-The terms "reproduce," "reproduction," "derivative works," and "distribution" have the same meaning here as under 
-U.S. copyright law.
-
-A "contribution" is the original software, or any additions or changes to the software.
-A "contributor" is any person that distributes its contribution under this license.
-"Licensed patents" are a contributor's patent claims that read directly on its contribution.
-
-2. Grant of Rights
-(A) Copyright Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, 
-each contributor grants you a non-exclusive, worldwide, royalty-free copyright license to reproduce its contribution, prepare derivative works of its contribution, and distribute its contribution or any derivative works that you create.
-(B) Patent Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, 
-each contributor grants you a non-exclusive, worldwide, royalty-free license under its licensed patents to make, have made, use, sell, offer for sale, import, and/or otherwise dispose of its contribution in the software or derivative works of the contribution in the software.
-
-3. Conditions and Limitations
-(A) No Trademark License- This license does not grant you rights to use any contributors' name, logo, or trademarks.
-(B) If you bring a patent claim against any contributor over patents that you claim are infringed by the software, 
-your patent license from such contributor to the software ends automatically.
-(C) If you distribute any portion of the software, you must retain all copyright, patent, trademark, and attribution 
-notices that are present in the software.
-(D) If you distribute any portion of the software in source code form, you may do so only under this license by including 
-a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object 
-code form, you may only do so under a license that complies with this license.
-(E) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees
-or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent
-permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular
-purpose and non-infringement.
-*/
-using MonoTouch.Foundation;
-using MonoTouch.AVFoundation;
-
-
-#endregion License
+// MonoGame - Copyright (C) The MonoGame Team
+// This file is subject to the terms and conditions defined in
+// file 'LICENSE.txt', which is part of this source code package.
 
 using System;
 using System.IO;
-
 using Microsoft.Xna.Framework.Audio;
-﻿
+
 namespace Microsoft.Xna.Framework.Media
 {
-    public class Song : IEquatable<Song>, IDisposable
+    public sealed partial class Song : IEquatable<Song>, IDisposable
     {
-		private AVAudioPlayer _sound;
-		private string _name;
-		private int _playCount;
-		
+        private string _name;
+		private int _playCount = 0;
+        private TimeSpan _duration = TimeSpan.Zero;
+        bool disposed;
+
+        internal delegate void FinishedPlayingHandler(object sender, EventArgs args);
+        event FinishedPlayingHandler DonePlaying;
+
+        internal Song(string fileName, int durationMS)
+            : this(fileName)
+        {
+            _duration = TimeSpan.FromMilliseconds(durationMS);
+        }
+
 		internal Song(string fileName)
 		{			
 			_name = fileName;
-            var file = NSUrl.FromFilename(fileName);
 
-            _sound = AVAudioPlayer.FromUrl(file);
+            PlatformInitialize(fileName);
+        }
 
-            if (!_sound.PrepareToPlay())
-            {
-                throw new Exception("Unable to Prepare sound for playback!");
-            }
+        ~Song()
+        {
+            Dispose(false);
+        }
+
+        internal string FilePath
+		{
+			get { return _name; }
 		}
 		
 		public void Dispose()
         {
-			_sound.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
-		
-		public bool Equals(Song song) 
-		{
+        
+        void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    PlatformDispose(disposing);
+                }
+
+                disposed = true;
+            }
+        }
+
+#if WINDOWS_MEDIA_ENGINE || WINDOWS_PHONE
+
+        private void PlatformDispose(bool disposing)
+        {
+            // NO OP on Win8.
+        }
+
+        private void PlatformInitialize(string fileName)
+        {
+            // NO OP on Win8.
+        }
+#endif
+
+        public bool Equals(Song song)
+        {
+#if DIRECTX
+            return song != null && song.FilePath == FilePath;
+#else
 			return ((object)song != null) && (Name == song.Name);
+#endif
 		}
 		
 		public override int GetHashCode ()
@@ -107,123 +111,14 @@ namespace Microsoft.Xna.Framework.Media
 		{
 		  return ! (song1 == song2);
 		}
-		
-		internal void Play()
-		{			
-			if ( _sound != null )
-			{
-				_sound.Play();
-				_playCount++;
-			}
-        }
 
-		internal void Resume()
-		{
-			if ( _sound != null )
-			{
-                _sound.Play();
-			}
-		}
-		
-		internal void Pause()
-		{			
-			if ( _sound != null )
-			{
-				_sound.Pause();
-			}
-        }
-		
-		internal void Stop()
-		{
-			if ( _sound != null )
-			{
-				_sound.Stop();
-			}
-		}
-		
-		internal bool Loop
-		{
-			get
-			{
-				if ( _sound != null )
-				{
-                    return _sound.NumberOfLoops == -1;
-				}
-				else
-				{
-				 	return false;	
-				}
-			}
-			set 
-			{
-				if ( _sound != null )
-				{
-					if(value)
-                        _sound.NumberOfLoops = -1;
-                    else
-                        _sound.NumberOfLoops = 0;
-				}
-			}
-		}
-		
-		internal float Volume
-		{
-			get
-			{
-				if (_sound != null)
-				{
-					return _sound.Volume;
-				}
-				else
-				{
-					return 0.0f;
-				}
-			}
-			
-			set
-			{
-				if ( _sound != null )
-				{
-					if ( _sound.Volume != value )
-					{
-						_sound.Volume = value;
-					}
-				}
-			}			
-		}
-		
         public TimeSpan Duration
         {
             get
             {
-				if ( _sound != null )
-				{
-					//return new TimeSpan(0,0,(int)_sound.Duration);
-					return new TimeSpan(0);
-				}
-				else
-				{
-					return new TimeSpan(0);
-				}
-				
+                return _duration;
             }
-        }
-		
-		public TimeSpan Position
-        {
-            get
-            {
-				if ( _sound != null )
-				{
-					//return new TimeSpan(0,0,(int)_sound.CurrentPosition);
-					return new TimeSpan(0);
-				}
-				else
-				{
-					return new TimeSpan(0);
-				}
-            }
-        }
+        }	
 
         public bool IsProtected
         {

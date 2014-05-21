@@ -53,6 +53,11 @@ namespace Microsoft.Xna.Framework.GamerServices
 			innerlist = new List<FriendGamer>();
 		}
 		
+        ~FriendCollection()
+        {
+            Dispose(false);
+        }
+
 		#region Properties
 		public int Count
         {
@@ -87,6 +92,10 @@ namespace Microsoft.Xna.Framework.GamerServices
 			{
 				return isReadOnly;
 			}
+            private set 
+            {
+                isReadOnly = value;
+            }
         }
 		
         #endregion Properties
@@ -132,9 +141,15 @@ namespace Microsoft.Xna.Framework.GamerServices
 		
 		public void Dispose()
 	    {
-			
+            Dispose(true);
+            GC.SuppressFinalize(this);
 		}
 		
+        protected virtual void Dispose(bool disposing)
+        {
+
+        }
+
 		public int IndexOf(FriendGamer item)
         {
             return innerlist.IndexOf(item);

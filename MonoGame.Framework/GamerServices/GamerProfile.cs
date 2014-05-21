@@ -50,16 +50,29 @@ namespace Microsoft.Xna.Framework.GamerServices
 {
 	
 	public sealed class GamerProfile : IDisposable
-	{
-	#region Methods
-		public void Dispose ()
-		{
+    {
+        ~GamerProfile()
+        {
+            Dispose(false);
+        }
 
+        #region IDisposable implementation
+
+        public void Dispose()
+		{
+            Dispose(true);
+            GC.SuppressFinalize(this);
 		}
 
-	#endregion
+        private void Dispose(bool disposing)
+        {
+        }
+
+	    #endregion
 
 	#region Properties
+
+        /*
 		public Texture2D GamerPicture {
 			get {
 				throw new NotImplementedException ();
@@ -113,6 +126,8 @@ namespace Microsoft.Xna.Framework.GamerServices
 				throw new NotImplementedException ();
 			}
 		}
+        */
+
 	#endregion
 	}
 }

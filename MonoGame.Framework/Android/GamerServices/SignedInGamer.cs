@@ -91,6 +91,12 @@ namespace Microsoft.Xna.Framework.GamerServices
 			EndAuthentication( result );
 		}
 		
+		public SignedInGamer(AsyncCallback callback)
+		{
+			var result	= BeginAuthentication(callback, null);
+			EndAuthentication( result );
+		}
+		
 		private void AuthenticationCompletedCallback( IAsyncResult result )
 		{
 			EndAuthentication(result);	
@@ -171,7 +177,12 @@ namespace Microsoft.Xna.Framework.GamerServices
 		}
 		
 		delegate void AwardAchievementDelegate(string achievementId, double percentageComplete);
-		
+
+        public IAsyncResult BeginAwardAchievement(string achievementId, AsyncCallback callback, Object state)
+        {
+            return BeginAwardAchievement(achievementId, 100.0, callback, state);
+        }
+
 		public IAsyncResult BeginAwardAchievement(
          string achievementId,
 		 double percentageComplete,

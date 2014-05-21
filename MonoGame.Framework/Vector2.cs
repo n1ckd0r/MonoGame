@@ -27,11 +27,12 @@ SOFTWARE.
 
 using System;
 using System.Text;
-using System.Drawing;
 using System.Globalization;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework
 {
+    [DataContract]
     public struct Vector2 : IEquatable<Vector2>
     {
         #region Private Fields
@@ -45,8 +46,11 @@ namespace Microsoft.Xna.Framework
 
 
         #region Public Fields
-
+      
+        [DataMember]
         public float X;
+        
+        [DataMember]
         public float Y;
 
         #endregion Public Fields
@@ -217,7 +221,7 @@ namespace Microsoft.Xna.Framework
         {
 			if(obj is Vector2)
 			{
-				return Equals((Vector2)this);
+				return Equals((Vector2)obj);
 			}
 			
             return false;

@@ -1,152 +1,123 @@
-﻿using System;
+﻿// MonoGame - Copyright (C) The MonoGame Team
+// This file is subject to the terms and conditions defined in
+// file 'LICENSE.txt', which is part of this source code package.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 
-#if MONOMAC
-using MonoMac.OpenGL;
-#else
-using GL11 = OpenTK.Graphics.ES11.GL;
-using All11 = OpenTK.Graphics.ES11.All;
-#endif
-
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public class VertexBuffer : GraphicsResource
+    public partial class VertexBuffer : GraphicsResource
     {
-        private readonly BufferUsage _bufferUsage;
-        private readonly VertexDeclaration _vertexDeclaration;
+        internal bool _isDynamic;
 
-        internal Type _type;
-        internal object _buffer;
-        internal IntPtr _bufferPtr;
-        internal int _bufferIndex;
-		internal int _size;		
-		internal uint _bufferStore;
+		public int VertexCount { get; private set; }
+		public VertexDeclaration VertexDeclaration { get; private set; }
+		public BufferUsage BufferUsage { get; private set; }
+		
+		protected VertexBuffer(GraphicsDevice graphicsDevice, VertexDeclaration vertexDeclaration, int vertexCount, BufferUsage bufferUsage, bool dynamic)
+		{
+			if (graphicsDevice == null)
+                throw new ArgumentNullException("Graphics Device Cannot Be null");
 
-		// TODO: Remove this VB limit!
-		internal uint vbo;
-        internal static int _bufferCount;
-        internal static VertexBuffer[] _allBuffers = new VertexBuffer[50];
-		internal static List<Action> _delayedBufferDelegates = new List<Action>();
+            this.GraphicsDevice = graphicsDevice;
+            this.VertexDeclaration = vertexDeclaration;
+            this.VertexCount = vertexCount;
+            this.BufferUsage = bufferUsage;
 
-        public VertexBuffer(GraphicsDevice graphics, Type type, int vertexCount, BufferUsage bufferUsage)
+            // Make sure the graphics device is assigned in the vertex declaration.
+            if (vertexDeclaration.GraphicsDevice != graphicsDevice)
+                vertexDeclaration.GraphicsDevice = graphicsDevice;
+
+            _isDynamic = dynamic;
+
+            PlatformConstruct();
+		}
+
+        public VertexBuffer(GraphicsDevice graphicsDevice, VertexDeclaration vertexDeclaration, int vertexCount, BufferUsage bufferUsage) :
+			this(graphicsDevice, vertexDeclaration, vertexCount, bufferUsage, false)
         {
-            graphicsDevice = graphics;
-            _type = type;
-			VertexCount = vertexCount;
-            _bufferUsage = bufferUsage;
         }
 		
-		public VertexBuffer (GraphicsDevice graphics, VertexDeclaration vertexDecs, int vertexCount, BufferUsage bufferUsage)
-			: this (graphics, vertexDecs.GetType(), vertexCount, bufferUsage)
+		public VertexBuffer(GraphicsDevice graphicsDevice, Type type, int vertexCount, BufferUsage bufferUsage) :
+			this(graphicsDevice, VertexDeclaration.FromType(type), vertexCount, bufferUsage, false)
 		{
-			_vertexDeclaration = vertexDecs;
-		}
-		
-		public int VertexCount { get; private set; }
+        }
 
-		public VertexDeclaration VertexDeclaration 
+        /// <summary>
+        /// The GraphicsDevice is resetting, so GPU resources must be recreated.
+        /// </summary>
+        internal protected override void GraphicsDeviceResetting()
         {
-			get 
-            {
-				return _vertexDeclaration;
-			}
-		}
+            PlatformGraphicsDeviceResetting();
+        }
 
-		internal static void CreateFrameBuffers ()
-		{
-			foreach (var action in _delayedBufferDelegates)
-				action.Invoke ();
-
-			_delayedBufferDelegates.Clear ();
-		}
-		
-		internal void GenerateBuffer<T>() where T : struct
-		{
-			var vd = VertexDeclaration.FromType(_type);
-			
-			_size = vd.VertexStride * ((T[])_buffer).Length;
-			
-			#if MONOMAC
-
-			BufferUsageHint bufferUsage = (_bufferUsage == BufferUsage.WriteOnly) ? BufferUsageHint.StaticDraw : BufferUsageHint.DynamicDraw;
-
-			GL.GenBuffers (1, out _bufferStore);
-			GL.BindBuffer (BufferTarget.ArrayBuffer, _bufferStore);
-			GL.BufferData (BufferTarget.ArrayBuffer, (IntPtr)_size, (T[])_buffer, bufferUsage);			
-			
-			#else
-			
-            var bufferUsage = (_bufferUsage == BufferUsage.WriteOnly) ? All11.StaticDraw : All11.DynamicDraw;
-			
-			GL11.GenBuffers(1, out _bufferStore);
-            GL11.BindBuffer(All11.ArrayBuffer, _bufferStore);
-            GL11.BufferData(All11.ArrayBuffer, (IntPtr)_size, (T[])_buffer, bufferUsage);			
-
-			#endif
-		}
-
-        public void GetData<T>(T[] vertices) where T : struct
+        public void GetData<T> (int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride) where T : struct
         {
-            if (_buffer == null)
-                throw new Exception("Can't get data on an empty buffer");
+            if (data == null)
+                throw new ArgumentNullException("data", "This method does not accept null for this parameter.");
+            if (data.Length < (startIndex + elementCount))
+                throw new ArgumentOutOfRangeException("elementCount", "This parameter must be a valid index within the array.");
+            if (BufferUsage == BufferUsage.WriteOnly)
+                throw new NotSupportedException("Calling GetData on a resource that was created with BufferUsage.WriteOnly is not supported.");
+			if ((elementCount * vertexStride) > (VertexCount * VertexDeclaration.VertexStride))
+                throw new InvalidOperationException("The array is not the correct size for the amount of data requested.");
 
-            var tbuff = (T[])_buffer;
-            for (var i = 0; i < tbuff.Length; i++)
-                vertices[i] = tbuff[i];
+            PlatformGetData<T>(offsetInBytes, data, startIndex, elementCount, vertexStride);
+        }
+
+        public void GetData<T>(T[] data, int startIndex, int elementCount) where T : struct
+        {
+            var elementSizeInByte = Marshal.SizeOf(typeof(T));
+            this.GetData<T>(0, data, startIndex, elementCount, elementSizeInByte);
+        }
+
+        public void GetData<T>(T[] data) where T : struct
+        {
+            var elementSizeInByte = Marshal.SizeOf(typeof(T));
+            this.GetData<T>(0, data, 0, data.Count(), elementSizeInByte);
         }
 
         public void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride) where T : struct
         {
-            SetData<T>(0, data, startIndex, elementCount, VertexDeclaration.VertexStride, SetDataOptions.Discard);
+            SetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, VertexDeclaration.VertexStride, SetDataOptions.None);
         }
         		
 		public void SetData<T>(T[] data, int startIndex, int elementCount) where T : struct
         {
-            SetData<T>(0, data, startIndex, elementCount, VertexDeclaration.VertexStride, SetDataOptions.Discard);
+            SetDataInternal<T>(0, data, startIndex, elementCount, VertexDeclaration.VertexStride, SetDataOptions.None);
 		}
-
+		
         public void SetData<T>(T[] data) where T : struct
         {
-            SetData<T>(0, data, 0, data.Length, VertexDeclaration.VertexStride, SetDataOptions.Discard);
+            SetDataInternal<T>(0, data, 0, data.Length, VertexDeclaration.VertexStride, SetDataOptions.None);
         }
 
-		protected void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
+        protected void SetDataInternal<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
         {
             if (data == null)
                 throw new ArgumentNullException("data is null");
             if (data.Length < (startIndex + elementCount))
                 throw new InvalidOperationException("The array specified in the data parameter is not the correct size for the amount of data requested.");
-            if ((vertexStride > (VertexCount * VertexDeclaration.VertexStride)) || (vertexStride < VertexDeclaration.VertexStride))
+
+            var bufferSize = VertexCount * VertexDeclaration.VertexStride;
+            if ((vertexStride > bufferSize) || (vertexStride < VertexDeclaration.VertexStride))
                 throw new ArgumentOutOfRangeException("One of the following conditions is true:\nThe vertex stride is larger than the vertex buffer.\nThe vertex stride is too small for the type of data requested.");
-   
-			var elementSizeInBytes = Marshal.SizeOf(typeof(T));
 
-			//Threading.BlockOnUIThread(() =>
-            //{
-                var sizeInBytes = elementSizeInBytes * elementCount;
-#if MONOMAC
-                GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-                GL.BufferSubData<T>(BufferTarget.ArrayBuffer, new IntPtr(offsetInBytes), new IntPtr(sizeInBytes), data);
-#else
-				GL11.BindBuffer(All11.ArrayBuffer, vbo);
-                GL11.BufferSubData<T>(All11.ArrayBuffer, new IntPtr(offsetInBytes), new IntPtr(sizeInBytes), data);
-#endif
-
-            //});
+            var elementSizeInBytes = Marshal.SizeOf(typeof(T));
+            PlatformSetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, vertexStride, options, bufferSize, elementSizeInBytes);
         }
 
-		public override void Dispose ()
-		{
-			#if MONOMAC
-			GL.GenBuffers (0, out _bufferStore);
-			#else
-			GL11.GenBuffers(0, out _bufferStore);			
-			#endif
-			
-            base.Dispose();
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                PlatformDispose(disposing);
+            }
+            base.Dispose(disposing);
 		}
-	}
+    }
 }

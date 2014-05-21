@@ -44,7 +44,6 @@ using Android.Views;
 using Microsoft.Xna.Framework;
 using System;
 using Microsoft.Xna.Framework.Graphics;
-using OpenTK.Graphics.ES11;
 using System.Collections.Generic;
 
 
@@ -59,7 +58,6 @@ using System.Collections.Generic;
 		private ThumbStickDefinition _leftThumbDefinition,_rightThumbDefinition;
 		private Color _alphaColor = Color.DarkGray;		
 		private int _buttons;
-		private Vector2 _leftStick, _rightStick;
 		
 		protected GamePad()
 		{
@@ -87,8 +85,6 @@ using System.Collections.Generic;
 		public void Reset()
 		{
 			_buttons = 0;
-			_leftStick = Vector2.Zero;
-			_rightStick = Vector2.Zero;
 			
 			// reset thumbsticks
 			if (_leftThumbDefinition != null) 
@@ -180,14 +176,12 @@ using System.Collections.Generic;
 
                         if (radius <= _thumbStickRadius) {
                             _leftThumbDefinition.Offset = movement;
-                            _leftStick = new Vector2(movement.X/20, movement.Y/-20);
                         }
                     }
                     else {
                         // reset left thumbstick
                         if (_leftThumbDefinition != null) {
                             _leftThumbDefinition.Offset = Vector2.Zero;
-                            _leftStick = Vector2.Zero;
                         }
 
                         if (Visible && (_rightThumbDefinition != null) &&
@@ -199,14 +193,12 @@ using System.Collections.Generic;
 
                             if (radius <= _thumbStickRadius) {
                                 _rightThumbDefinition.Offset = movement;
-                                _rightStick = new Vector2(movement.X/20, movement.Y/-20);
                             }
                         }
                         else {
                             // reset right thumbstick
                             if (_rightThumbDefinition != null) {
                                 _rightThumbDefinition.Offset = Vector2.Zero;
-                                _rightStick = Vector2.Zero;
                             }
                         }
                     }
@@ -221,11 +213,9 @@ using System.Collections.Generic;
                     }
                     if ((_leftThumbDefinition != null) && (CheckThumbStickHit(_leftThumbDefinition, location))) {
                         LeftThumbStickDefinition.Offset = Vector2.Zero;
-                        _leftStick = Vector2.Zero;
                     }
                     if ((_rightThumbDefinition != null) && (CheckThumbStickHit(_rightThumbDefinition, location))) {
                         _rightThumbDefinition.Offset = Vector2.Zero;
-                        _rightStick = Vector2.Zero;
                     }
                 }
             }
@@ -234,14 +224,14 @@ using System.Collections.Generic;
         private bool CheckButtonHit(ButtonDefinition theButton, Vector2 location)
         {
             Rectangle buttonRect = new Rectangle((int)theButton.Position.X, (int)theButton.Position.Y, theButton.TextureRect.Width, theButton.TextureRect.Height);
-            return buttonRect.Contains(location);
+            return buttonRect.Contains((int)location.X, (int)location.Y);
         }
 
         private bool CheckThumbStickHit(ThumbStickDefinition theStick, Vector2 location)
         {
             Vector2 stickPosition = theStick.Position + theStick.Offset;
             Rectangle thumbRect = new Rectangle((int)stickPosition.X, (int)stickPosition.Y, theStick.TextureRect.Width, theStick.TextureRect.Height);
-            return thumbRect.Contains(location);
+            return thumbRect.Contains((int)location.X, (int)location.Y);
         }
 
         private bool UpdateButton(ButtonDefinition button, Vector2 location)

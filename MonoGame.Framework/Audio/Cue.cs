@@ -45,18 +45,22 @@ namespace Microsoft.Xna.Framework.Audio
 {
 	public class Cue : IDisposable
 	{
+		AudioEngine engine;
 		string name;
 		XactSound[] sounds;
 		float[] probs;
 		XactSound curSound;
 		Random variationRand;
 		
-		bool paused = false;
 		float volume = 1.0f;
 		
 		public bool IsPaused
 		{
-			get { return paused; }
+			get {
+				if (curSound != null)
+					return curSound.IsPaused;
+				return true;
+			}
 		}
 		
 		public bool IsPlaying
@@ -84,8 +88,9 @@ namespace Microsoft.Xna.Framework.Audio
 			get { return name; }
 		}
 		
-		internal Cue(string cuename, XactSound sound)
+		internal Cue (AudioEngine engine, string cuename, XactSound sound)
 		{
+			this.engine = engine;
 			name = cuename;
 			sounds = new XactSound[1];
 			sounds[0] = sound;
@@ -110,7 +115,6 @@ namespace Microsoft.Xna.Framework.Audio
 			if (curSound != null) {
 				curSound.Pause();
 			}
-			paused = true;
 		}
 		
 		public void Play()
@@ -120,7 +124,6 @@ namespace Microsoft.Xna.Framework.Audio
 			
 			curSound.Volume = volume;
 			curSound.Play ();
-			paused = false;
 		}
 		
 		public void Resume()
@@ -128,7 +131,6 @@ namespace Microsoft.Xna.Framework.Audio
 			if (curSound != null) {
 				curSound.Resume ();
 			}
-			paused = false;
 		}
 		
 		public void Stop(AudioStopOptions options)
@@ -136,10 +138,9 @@ namespace Microsoft.Xna.Framework.Audio
 			if (curSound != null) {
 				curSound.Stop();
 			}
-			paused = false;
 		}
 		
-		public void SetVariable(string name, float value)
+		public void SetVariable (string name, float value)
 		{
 			if (name == "Volume") {
 				volume = value;
@@ -147,18 +148,26 @@ namespace Microsoft.Xna.Framework.Audio
 					curSound.Volume = value;
 				}
 			} else {
-				throw new NotImplementedException();
+				engine.SetGlobalVariable (name, value);
 			}
 		}
 		
-		public float GetVariable(string name, float value)
+		public float GetVariable (string name, float value)
 		{
 			if (name == "Volume") {
 				return volume;
 			} else {
-				throw new NotImplementedException();
+				return engine.GetGlobalVariable (name);
 			}
 		}
+		
+		public void Apply3D(AudioListener listener, AudioEmitter emitter) {
+			
+		}
+		
+		public bool IsDisposed { get { return false; } }
+		
+		
 		
 		#region IDisposable implementation
 		public void Dispose ()

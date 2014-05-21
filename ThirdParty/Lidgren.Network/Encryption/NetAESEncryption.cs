@@ -1,3 +1,6 @@
+#if !ANDROID && !IOS && !PSM 
+#define IS_FULL_NET_AVAILABLE
+#endif
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,13 +17,15 @@ namespace Lidgren.Network
 	{
 		private readonly byte[] m_key;
 		private readonly byte[] m_iv;
-		private readonly int m_bitSize;
-		private static readonly List<int> m_keysizes;
-		private static readonly List<int> m_blocksizes;
+		private static readonly List<int> m_keysizes = null;
+		private static readonly List<int> m_blocksizes = null;
+
+        private readonly int m_bitSize;
+		private int BitSize { get { return this.m_bitSize; } }
 
 		static NetAESEncryption()
 		{
-#if !IOS && !ANDROID
+#if IS_FULL_NET_AVAILABLE
 			AesCryptoServiceProvider aes = new AesCryptoServiceProvider();
 			List<int> temp = new List<int>();
 			foreach (KeySizes keysize in aes.LegalKeySizes)
@@ -116,7 +121,7 @@ namespace Lidgren.Network
 		{
 			try
 			{
-#if !IOS && !ANDROID
+#if IS_FULL_NET_AVAILABLE
 				// nested usings are fun!
 				using (AesCryptoServiceProvider aesCryptoServiceProvider = new AesCryptoServiceProvider { KeySize = m_bitSize, Mode = CipherMode.CBC })
 				{
@@ -149,7 +154,7 @@ namespace Lidgren.Network
 		{
 			try
 			{
-#if !IOS && !ANDROID
+#if IS_FULL_NET_AVAILABLE
 				// nested usings are fun!
 				using (AesCryptoServiceProvider aesCryptoServiceProvider = new AesCryptoServiceProvider { KeySize = m_bitSize, Mode = CipherMode.CBC })
 				{

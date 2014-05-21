@@ -71,6 +71,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Text;
 using System.Threading;
 
 using MonoTouch.Foundation;
@@ -83,12 +84,46 @@ using Microsoft.Xna.Framework.Input.Touch;
 
 namespace Microsoft.Xna.Framework.GamerServices
 {
+    class GuideAlreadyVisibleException : Exception
+    {
+        public GuideAlreadyVisibleException (string message)
+            : base(message)
+        { }
+    }
+
 	class GuideViewController : UIViewController
 	{
+        UIViewController _parent;
+
+        public GuideViewController(UIViewController parent)
+        {
+            _parent = parent;
+        }
+
+        #region Autorotation for iOS 5 or older
+        [Obsolete]
 		public override bool ShouldAutorotateToInterfaceOrientation (UIInterfaceOrientation toInterfaceOrientation)
 		{
-			return this.ParentViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+            return _parent.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 		}
+        #endregion
+
+        #region Autorotation for iOS 6 or newer
+        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations ()
+        {
+            return _parent.GetSupportedInterfaceOrientations();
+        }
+        
+        public override bool ShouldAutorotate ()
+        {
+            return _parent.ShouldAutorotate();
+        }
+        
+        public override UIInterfaceOrientation PreferredInterfaceOrientationForPresentation ()
+        {
+            return _parent.PreferredInterfaceOrientationForPresentation();
+        }
+        #endregion
 
 		public override void DidRotate (UIInterfaceOrientation fromInterfaceOrientation)
 		{
@@ -112,19 +147,20 @@ namespace Microsoft.Xna.Framework.GamerServices
 
 	public static class Guide
 	{
-		private static int _showKeyboardInputRequestCount;
-
-		private static bool isMessageBoxShowing = false;
 		private static GKLeaderboardViewController leaderboardController;
 		private static GKAchievementViewController achievementController;
 		private static GKPeerPickerController peerPickerController;
 		private static GKMatchmakerViewController matchmakerViewController;
+        private static KeyboardInputViewController keyboardViewController;
 		private static GuideViewController viewController = null;
 		private static GestureType prevGestures;
 
 		private static bool _isInitialised;
 		private static UIWindow _window;
 		private static UIViewController _gameViewController;
+
+        [CLSCompliant(false)]
+        public static GKMatch Match { get; private set; }
 
 		internal static void Initialise(Game game)
 		{
@@ -161,18 +197,7 @@ namespace Microsoft.Xna.Framework.GamerServices
 			set { isTrialMode = value; }
 		}
 
-		private static bool isVisible;
-		public static bool IsVisible {
-			get {
-				AssertInitialised ();
-				return isVisible;
-			}
-			set {
-				AssertInitialised ();
-				// FIXME: Need to hide any visible UI here.
-				isVisible = value;
-			}
-		}
+        public static bool IsVisible { get; internal set; }
 
 		public static bool SimulateTrialMode { get; set; }
 
@@ -192,112 +217,67 @@ namespace Microsoft.Xna.Framework.GamerServices
 					"Gamer services functionality has not been initialized.");
 		}
 
-		delegate string ShowKeyboardInputDelegate(
-         PlayerIndex player,           
-         string title,
-         string description,
-         string defaultText,
-         bool usePasswordMode);
+        delegate string ShowKeyboardInputDelegate(
+            string title, string description, string defaultText, Object state, bool usePasswordMode);
 
-        public static string ShowKeyboardInput(
-         PlayerIndex player,           
-         string title,
-         string description,
-         string defaultText,
-         bool usePasswordMode)
+        private static string ShowKeyboardInput(
+            string title, string description, string defaultText, Object state, bool usePasswordMode)
         {
-            string currentResult = defaultText;
-            if (!isMessageBoxShowing)
-            {
+            string result = null;
 
-                UIApplication.SharedApplication.InvokeOnMainThread(delegate {
+            IsVisible = true;
+            EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
 
-                var alertView = new UIAlertView();
-                alertView.Title = description;
+            keyboardViewController = new KeyboardInputViewController(
+                title, description, defaultText, usePasswordMode, _gameViewController);
 
-                alertView.AlertViewStyle = usePasswordMode ? UIAlertViewStyle.SecureTextInput : UIAlertViewStyle.PlainTextInput;
-                alertView.AddButton ("Cancel");
-                alertView.AddButton ("OK");
+            UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+                _gameViewController.PresentViewController (keyboardViewController, true, null);
 
-                //username
-                UITextField textField = alertView.GetTextField(0);
-                textField.Text = defaultText;
-                textField.KeyboardType = UIKeyboardType.Default;
-                textField.ReturnKeyType = UIReturnKeyType.Next;
-                textField.ClearButtonMode = UITextFieldViewMode.WhileEditing;
+                keyboardViewController.View.InputAccepted += (sender, e) => {
+                    _gameViewController.DismissViewController (true, null);
+                    result = keyboardViewController.View.Text;
+                    waitHandle.Set ();
+                };
 
-                alertView.Clicked += delegate(object sender, UIButtonEventArgs e)
-                        {
-                            if (e.ButtonIndex == 1)
-                            {
+                keyboardViewController.View.InputCanceled += (sender, e) => {
+                    _gameViewController.DismissViewController (true, null);
+                    waitHandle.Set ();
+                };
+            });
+            waitHandle.WaitOne ();
 
-                                    currentResult = textField.Text;
-                                    isMessageBoxShowing = false;
-                            }
-                        };
-
-                alertView.Dismissed += delegate(object sender, UIButtonEventArgs e)
-                                { 
-                                    currentResult = defaultText;
-                                    isMessageBoxShowing = false;
-                                };
-
-
-                    isMessageBoxShowing = true;
-                    isVisible = isMessageBoxShowing;
-                    alertView.Show();
-                });
-
-                while(isMessageBoxShowing) {
-                    Thread.Sleep(TimeSpan.FromMilliseconds(5));
-                }
-
-                isVisible = isMessageBoxShowing;
-
-                return currentResult;
-            }
-
-            return null;
+            IsVisible = false;
+            return result;
         }
 
-        public static IAsyncResult BeginShowKeyboardInput (
-         PlayerIndex player,
-         string title,
-         string description,
-         string defaultText,
-         AsyncCallback callback,
-         Object state)
-        {
-            return BeginShowKeyboardInput(player, title, description, defaultText, callback, state, false );
-        }
+		public static IAsyncResult BeginShowKeyboardInput (
+			PlayerIndex player, string title, string description, string defaultText,
+			AsyncCallback callback, Object state)
+		{
+			AssertInitialised ();
+			return BeginShowKeyboardInput(player, title, description, defaultText, callback, state, false );
+		}
 
-        public static IAsyncResult BeginShowKeyboardInput (
-         PlayerIndex player,
-         string title,
-         string description,
-         string defaultText,
-         AsyncCallback callback,
-         Object state,
-         bool usePasswordMode)
-        {
+		public static IAsyncResult BeginShowKeyboardInput (
+			PlayerIndex player, string title, string description, string defaultText,
+			AsyncCallback callback, Object state, bool usePasswordMode)
+		{
+			AssertInitialised ();
+
+            if (IsVisible)
+                throw new GuideAlreadyVisibleException("The function cannot be completed at this time: the Guide UI is already active. Wait until Guide.IsVisible is false before issuing this call.");
+
             ShowKeyboardInputDelegate ski = ShowKeyboardInput;
 
-            return ski.BeginInvoke(player, title, description, defaultText, usePasswordMode, callback, ski);
-        }
+            return ski.BeginInvoke(title, description, defaultText, state, usePasswordMode, callback, ski);
+		}
 
-        public static string EndShowKeyboardInput (IAsyncResult result)
-        {
-            try 
-            {
-                ShowKeyboardInputDelegate ski = (ShowKeyboardInputDelegate)result.AsyncState; 
-
-                return ski.EndInvoke(result);
-            } 
-            finally 
-            {
-                isVisible = false;
-            }           
-        }
+		public static string EndShowKeyboardInput (IAsyncResult result)
+		{
+            keyboardViewController = null;
+            return (result.AsyncState as ShowKeyboardInputDelegate).EndInvoke (result);
+		}
 
 		delegate Nullable<int> ShowMessageBoxDelegate(
 			string title, string text, IEnumerable<string> buttons, int focusButton, MessageBoxIcon icon);
@@ -307,35 +287,26 @@ namespace Microsoft.Xna.Framework.GamerServices
 		{
 			Nullable<int> result = null;
 			
-			if ( !isMessageBoxShowing )
-			{
-				isMessageBoxShowing = true;	
-	
-				UIAlertView alert = new UIAlertView();
-				alert.Title = title;
-				foreach( string btn in buttons )
-				{
-					alert.AddButton(btn);
-				}
-				alert.Message = text;
-				alert.Dismissed += delegate(object sender, UIButtonEventArgs e) 
-								{ 
-									result = e.ButtonIndex;
-									isMessageBoxShowing = false;
-								};
-				alert.Clicked += delegate(object sender, UIButtonEventArgs e) 
-								{ 
-									result = e.ButtonIndex; 
-									isMessageBoxShowing = false;
-								};
-				
-				UIApplication.SharedApplication.InvokeOnMainThread(delegate {
-					alert.Show();
-				});
-				
-			}
-			
-			isVisible = isMessageBoxShowing;
+            IsVisible = true;
+            EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+
+			UIApplication.SharedApplication.InvokeOnMainThread(delegate {
+                UIAlertView alert = new UIAlertView();
+                alert.Title = title;
+                foreach( string btn in buttons )
+                {
+                    alert.AddButton(btn);
+                }
+                alert.Message = text;
+                alert.Dismissed += delegate(object sender, UIButtonEventArgs e) 
+                { 
+                    result = e.ButtonIndex;
+                    waitHandle.Set();
+                };
+                alert.Show();
+			});
+            waitHandle.WaitOne();
+            IsVisible = false;
 
 			return result;
 		}
@@ -344,9 +315,14 @@ namespace Microsoft.Xna.Framework.GamerServices
 			PlayerIndex player, string title, string text, IEnumerable<string> buttons, int focusButton,
 			MessageBoxIcon icon, AsyncCallback callback, Object state)
 		{	
+            if (IsVisible)
+                throw new GuideAlreadyVisibleException("The function cannot be completed at this time: the Guide UI is already active. Wait until Guide.IsVisible is false before issuing this call.");
+            
+            IsVisible = true;
+
 			ShowMessageBoxDelegate smb = ShowMessageBox; 
 
-			return smb.BeginInvoke(title, text, buttons, focusButton, icon, callback, smb);			
+            return smb.BeginInvoke(title, text, buttons, focusButton, icon, callback, smb);			
 		}
 
 		public static IAsyncResult BeginShowMessageBox (
@@ -359,25 +335,28 @@ namespace Microsoft.Xna.Framework.GamerServices
 
 		public static Nullable<int> EndShowMessageBox (IAsyncResult result)
 		{
-			try
-			{
-				ShowMessageBoxDelegate smbd = (ShowMessageBoxDelegate)result.AsyncState; 
-
-				return smbd.EndInvoke(result);
-			} 
-			finally 
-			{
-				isVisible = false;
-			}
+            return (result.AsyncState as ShowMessageBoxDelegate).EndInvoke(result);
 		}
-
 
 		public static void ShowMarketplace (PlayerIndex player)
 		{
-			AssertInitialised ();
+			AssertInitialised();
 
-			NSUrl url = new NSUrl("http://phobos.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=306469222&mt=8");
-			if (!UIApplication.SharedApplication.OpenUrl(url)) {
+			string bundleName = NSBundle.MainBundle.InfoDictionary[new NSString("CFBundleName")].ToString();
+			StringBuilder output = new StringBuilder();
+			foreach (char c in bundleName)
+			{
+				// Ampersand gets converted to "and"!!
+				if (c == '&')
+					output.Append("and");
+
+				// All alphanumeric characters are added
+				if (char.IsLetterOrDigit(c))
+					output.Append(c);
+			}
+			NSUrl url = new NSUrl("itms-apps://itunes.com/app/" + output.ToString());
+			if (!UIApplication.SharedApplication.OpenUrl(url))
+			{
 				// Error
 			}
 		}
@@ -401,6 +380,25 @@ namespace Microsoft.Xna.Framework.GamerServices
 				GamerServicesComponent.LocalNetworkGamer.SignedInGamer.BeginAuthentication(null, null);
 			}
 		}
+		
+		public static void ShowSignIn(int paneCount, bool onlineOnly, AsyncCallback callback) {
+			AssertInitialised ();
+
+			if ( paneCount != 1 )
+			{
+				new ArgumentException("paneCount Can only be 1 on iPhone");
+				return;
+			}
+
+			if (GamerServicesComponent.LocalNetworkGamer == null)
+			{
+				GamerServicesComponent.LocalNetworkGamer = new LocalNetworkGamer(callback);
+			}
+			else
+			{
+				GamerServicesComponent.LocalNetworkGamer.SignedInGamer.BeginAuthentication(callback, null);
+			}
+		}
 
 		public static void ShowLeaderboard()
 		{
@@ -419,23 +417,23 @@ namespace Microsoft.Xna.Framework.GamerServices
 					leaderboardController.DidFinish += delegate(object sender, EventArgs e) 
 					{
 						leaderboardController.DismissModalViewControllerAnimated(true);
-						isVisible = false;
+						IsVisible = false;
 						TouchPanel.EnabledGestures=prevGestures;
  					};
 
 					if (_window != null)
-					{						
+					{
 						if(viewController == null)
 						{
-							viewController = new GuideViewController();
+							viewController = new GuideViewController(_gameViewController);
 							_window.Add(viewController.View);
 							viewController.View.Hidden = true;
 						}
 						
 						prevGestures=TouchPanel.EnabledGestures;
 						TouchPanel.EnabledGestures=GestureType.None;
-						viewController.PresentModalViewController(leaderboardController, true);
-						isVisible = true;
+                        viewController.PresentModalViewController(leaderboardController, true);
+						IsVisible = true;
 					}
 			    }
 			}
@@ -464,7 +462,7 @@ namespace Microsoft.Xna.Framework.GamerServices
 					achievementController.DidFinish += delegate(object sender, EventArgs e) 
 					{									 
 						achievementController.DismissModalViewControllerAnimated(true);
-						isVisible = false;
+						IsVisible = false;
 						TouchPanel.EnabledGestures=prevGestures;
 					};
 
@@ -472,7 +470,7 @@ namespace Microsoft.Xna.Framework.GamerServices
 					{
 						if(viewController == null)
 						{
-							viewController = new GuideViewController();
+                            viewController = new GuideViewController(_gameViewController);
 							_window.Add(viewController.View);
 							viewController.View.Hidden = true;
 						}
@@ -480,7 +478,7 @@ namespace Microsoft.Xna.Framework.GamerServices
 						prevGestures=TouchPanel.EnabledGestures;
 						TouchPanel.EnabledGestures=GestureType.None;
 						viewController.PresentModalViewController(achievementController, true);						
-						isVisible = true;
+						IsVisible = true;
 					}
 			    }
 			}
@@ -492,6 +490,7 @@ namespace Microsoft.Xna.Framework.GamerServices
 			}
 		}
 		
+        [CLSCompliant(false)]
 		public static void ShowPeerPicker(GKPeerPickerControllerDelegate aPeerPickerControllerDelegate)
 		{
 			AssertInitialised ();
@@ -512,9 +511,18 @@ namespace Microsoft.Xna.Framework.GamerServices
 			    }
 			}
 		}
-		
-		
-		/*public static void ShowMatchMaker()
+
+        /// <summary>
+        /// Displays the iOS matchmaker to the player.
+        /// </summary>
+        /// <remarks>
+        /// Note this is not overloaded in derived classes on purpose.  This is
+        /// only a reason this exists is for caching effects.
+        /// </remarks>
+        /// <param name="minPlayers">Minimum players to find</param>
+        /// <param name="maxPlayers">Maximum players to find</param>
+        /// <param name="playersToInvite">Players to invite/param>
+        public static void ShowMatchMaker(int minPlayers, int maxPlayers, string[] playersToInvite)
 		{
 			AssertInitialised ();
 
@@ -523,19 +531,23 @@ namespace Microsoft.Xna.Framework.GamerServices
 				// Lazy load it
 				if ( matchmakerViewController == null )
 				{
-					matchmakerViewController = new GKMatchmakerViewController();
+					matchmakerViewController = new GKMatchmakerViewController(new GKMatchRequest());
 				}
 
 			    if (matchmakerViewController != null)		
-			    {			
+			    {		
+                    matchmakerViewController.MatchRequest.MinPlayers = minPlayers;
+                    matchmakerViewController.MatchRequest.MaxPlayers = maxPlayers;
+                    matchmakerViewController.MatchRequest.PlayersToInvite = playersToInvite;
+
 					matchmakerViewController.DidFailWithError += delegate(object sender, GKErrorEventArgs e) {
 						matchmakerViewController.DismissModalViewControllerAnimated(true);
-						isVisible = false;
+						IsVisible = false;
 						TouchPanel.EnabledGestures=prevGestures;
 					};
 					
 					matchmakerViewController.DidFindMatch += delegate(object sender, GKMatchEventArgs e) {
-						
+                        Guide.Match = e.Match;
 					};
 						
 					matchmakerViewController.DidFindPlayers += delegate(object sender, GKPlayersEventArgs e) {
@@ -544,7 +556,7 @@ namespace Microsoft.Xna.Framework.GamerServices
 					
 					matchmakerViewController.WasCancelled += delegate(object sender, EventArgs e) {
 						matchmakerViewController.DismissModalViewControllerAnimated(true);
-						isVisible = false;
+						IsVisible = false;
 						TouchPanel.EnabledGestures=prevGestures;
 					};
 
@@ -552,7 +564,7 @@ namespace Microsoft.Xna.Framework.GamerServices
 					{
 						if(viewController == null)
 						{
-							viewController = new GuideViewController();
+                            viewController = new GuideViewController(_gameViewController);
 							_window.Add(viewController.View);
 							viewController.View.Hidden = true;
 						}
@@ -560,11 +572,25 @@ namespace Microsoft.Xna.Framework.GamerServices
 						prevGestures=TouchPanel.EnabledGestures;
 						TouchPanel.EnabledGestures=GestureType.None;
 						viewController.PresentModalViewController(matchmakerViewController, true);						
-						isVisible = true;
+						IsVisible = true;
 					}				
 			    }
 			}
-		}*/
+		}
+
+        /// <summary>
+        /// Displays the iOS matchmaker to the player.
+        /// </summary>
+        /// <remarks>
+        /// Note this is not overloaded in derived classes on purpose.  This is
+        /// only a reason this exists is for caching effects.
+        /// </remarks>
+        /// <param name="minPlayers">Minimum players to find</param>
+        /// <param name="maxPlayers">Maximum players to find</param>
+        public static void ShowMatchMaker(int minPlayers, int maxPlayers)
+        {
+            ShowMatchMaker(minPlayers, maxPlayers, null);
+        }
 
 		public static IAsyncResult BeginShowStorageDeviceSelector( AsyncCallback callback, Object state )
 		{

@@ -30,10 +30,11 @@ SOFTWARE.
 
 using System;
 using System.Globalization;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [Serializable]
+    [DataContract]
     public class DisplayMode
     {
         #region Fields
@@ -48,7 +49,7 @@ namespace Microsoft.Xna.Framework.Graphics
         #region Properties
         
         public float AspectRatio {
-            get { return width / height; }
+            get { return (float)width / (float)height; }
         }
 
         public SurfaceFormat Format {
@@ -94,6 +95,14 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public static bool operator ==(DisplayMode left, DisplayMode right)
         {
+            if (left == null && right == null)
+            {
+                return true;
+            }
+            if (left == null || right == null)
+            {
+                return false;
+            }
             return (left.format == right.format) &&
                 (left.height == right.height) &&
                 (left.refreshRate == right.refreshRate) &&

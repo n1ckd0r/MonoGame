@@ -27,9 +27,12 @@ SOFTWARE.
 
 using System;
 using System.Text;
+using System.Runtime.Serialization;
+using System.ComponentModel;
 
 namespace Microsoft.Xna.Framework
 {
+    [DataContract]
     public struct Vector4 : IEquatable<Vector4>
     {
         #region Private Fields
@@ -45,10 +48,17 @@ namespace Microsoft.Xna.Framework
 
 
         #region Public Fields
-
+        
+        [DataMember]
         public float X;
+
+        [DataMember]
         public float Y;
+      
+        [DataMember]
         public float Z;
+      
+        [DataMember]
         public float W;
 
         #endregion Public Fields

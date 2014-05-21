@@ -1,245 +1,151 @@
-#region License
-// /*
-// Microsoft Public License (Ms-PL)
-// MonoGame - Copyright © 2009 The MonoGame Team
-// 
-// All rights reserved.
-// 
-// This license governs use of the accompanying software. If you use the software, you accept this license. If you do not
-// accept the license, do not use the software.
-// 
-// 1. Definitions
-// The terms "reproduce," "reproduction," "derivative works," and "distribution" have the same meaning here as under 
-// U.S. copyright law.
-// 
-// A "contribution" is the original software, or any additions or changes to the software.
-// A "contributor" is any person that distributes its contribution under this license.
-// "Licensed patents" are a contributor's patent claims that read directly on its contribution.
-// 
-// 2. Grant of Rights
-// (A) Copyright Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, 
-// each contributor grants you a non-exclusive, worldwide, royalty-free copyright license to reproduce its contribution, prepare derivative works of its contribution, and distribute its contribution or any derivative works that you create.
-// (B) Patent Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, 
-// each contributor grants you a non-exclusive, worldwide, royalty-free license under its licensed patents to make, have made, use, sell, offer for sale, import, and/or otherwise dispose of its contribution in the software or derivative works of the contribution in the software.
-// 
-// 3. Conditions and Limitations
-// (A) No Trademark License- This license does not grant you rights to use any contributors' name, logo, or trademarks.
-// (B) If you bring a patent claim against any contributor over patents that you claim are infringed by the software, 
-// your patent license from such contributor to the software ends automatically.
-// (C) If you distribute any portion of the software, you must retain all copyright, patent, trademark, and attribution 
-// notices that are present in the software.
-// (D) If you distribute any portion of the software in source code form, you may do so only under this license by including 
-// a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object 
-// code form, you may only do so under a license that complies with this license.
-// (E) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees
-// or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent
-// permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular
-// purpose and non-infringement.
-// */
-#endregion License
+﻿// MonoGame - Copyright (C) The MonoGame Team
+// This file is subject to the terms and conditions defined in
+// file 'LICENSE.txt', which is part of this source code package.
 
 #region Using Statements
 using System;
+#if !DIRECTX
+using System.IO;
+#endif
 #endregion Statements
 
 namespace Microsoft.Xna.Framework.Audio
 {
-	public sealed class SoundEffectInstance : IDisposable
-	{
-		private bool isDisposed = false;
-		private SoundState soundState = SoundState.Stopped;
-		
-		public SoundEffectInstance ()
-		{
-			
-		}
-		
-		public void Dispose()
-		{
-			_sound.Dispose();
-			isDisposed = true;
-		}
-		
-		public void Apply3D (AudioListener listener, AudioEmitter emitter)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public void Apply3D (AudioListener[] listeners,AudioEmitter emitter)
-		{
-			throw new NotImplementedException();
-		}		
-		
-		public void Pause ()
-		{
-            if ( _sound != null )
-			{
-				_sound.Pause();
-				soundState = SoundState.Paused;
-			}
-		}
-		
-		public void Play ()
-		{
-			if ( _sound != null )
-			{
-				if (soundState == SoundState.Paused)
-					_sound.Resume();
-				else
-					_sound.Play();
-				soundState = SoundState.Playing;
-			}
-		}
-		
-		public void Resume ()
-		{
-			Play();
-		}
-		
-		public void Stop ()
-		{
-			if ( _sound != null )
-			{
-				_sound.Stop();
-				soundState = SoundState.Stopped;
-			}
-		}
-		
-		public void Stop (bool immediate)
-		{
-			Stop();
-		}
-		
-		public bool IsDisposed 
-		{ 
-			get
-			{
-				return isDisposed;
-			}
-		}
-		
-		public bool IsLooped 
-		{ 
-			get
-			{
-				if ( _sound != null )
-				{
-					return _sound.Looping;
-				}
-				else
-				{
-					return false;
-				}
-			}
-			
-			set
-			{
-				if ( _sound != null )
-				{
-					if ( _sound.Looping != value )
-					{
-						_sound.Looping = value;
-					}
-				}
-			}
-		}
-		
-		public float Pan 
-		{ 
-			get
-			{
-                if ( _sound != null )
-				{
-					return _sound.Pan;
-				}
-				else
-				{
-					return 0.0f;
-				}
-			}
-			
-			set
-			{
-                if ( _sound != null )
-				{
-					if ( _sound.Pan != value )
-					{
-						_sound.Pan = value;
-					}
-				}
-			}
-		}
-		
-		public float Pitch         
-		{             
-	            get
-	            {
-					if ( _sound != null)
-				    {
-	                   return _sound.Rate;
-				    }
-				    return 0.0f;
-	            }
-	            set
-	            {
-				    if ( _sound != null && _sound.Rate != value)
-				    {
-	                   _sound.Rate = value;
-				    } 
-	            }        
-		 }
-		
-		private Sound _sound;
-		internal Sound Sound 
-		{ 
-			get
-			{
-				return _sound;
-			} 
-			
-			set
-			{
-				_sound = value;
-			} 
-		}
-		
-		public SoundState State 
-		{ 
-			get
-			{
-				if (_sound != null && soundState == SoundState.Playing && !_sound.Playing) {
-					soundState = SoundState.Stopped;
-				}
-				return soundState;
-			} 
-		}
-		
-		public float Volume
-		{ 
-			get
-			{
-				if (_sound != null)
-				{
-					return _sound.Volume;
-				}
-				else
-				{
-					return 0.0f;
-				}
-			}
-			
-			set
-			{
-				if ( _sound != null )
-				{
-					if ( _sound.Volume != value )
-					{
-						_sound.Volume = value;
-					}
-				}
-			}
-		}	
-		
-		
-	}
+    public sealed partial class SoundEffectInstance : IDisposable
+    {
+        private bool isDisposed = false;
+
+        internal bool _IsPooled = true;
+
+        private float _pan = 0.0f;
+        private float _volume = 1.0f;
+        private float _pitch = 0.0f;
+
+        public bool IsLooped
+        { 
+            get { return PlatformGetIsLooped(); }
+            set { PlatformSetIsLooped(value); }
+        }
+
+        public float Pan
+        {
+            get { return _pan; } 
+            set
+            {
+                if (value < -1.0f || value > 1.0f)
+                    throw new ArgumentOutOfRangeException();
+
+                PlatformSetPan(value);
+            }
+        }
+
+        public float Pitch
+        {
+            get { return _pitch; }
+            set
+            {
+                if (value < -1.0f || value > 1.0f)
+                    throw new ArgumentOutOfRangeException();
+
+                PlatformSetPitch(value);
+            }
+        }
+
+        public float Volume
+        {
+            get { return _volume; }
+            set
+            {
+                if (value < 0.0f || value > 1.0f)
+                    throw new ArgumentOutOfRangeException();
+
+                PlatformSetVolume(value);
+            }
+        }
+
+        public SoundState State { get { return PlatformGetState(); } }
+
+        public bool IsDisposed { get { return isDisposed; } }
+
+        internal SoundEffectInstance(){}
+        
+        /// <summary>
+        /// Creates a standalone SoundEffectInstance from given wavedata.
+        /// </summary>
+        internal SoundEffectInstance(byte[] buffer, int sampleRate, int channels)
+        {
+            PlatformInitialize(buffer, sampleRate, channels);
+        }
+
+
+        public void Apply3D(AudioListener listener, AudioEmitter emitter)
+        {
+            PlatformApply3D(listener, emitter);
+        }
+
+        public void Apply3D(AudioListener[] listeners, AudioEmitter emitter)
+        {
+            foreach (var l in listeners)
+				PlatformApply3D(l, emitter);
+        }
+
+        public void Pause()
+        {
+            PlatformPause();
+        }
+
+        public void Play()
+        {
+            if (State == SoundState.Playing)
+                return;
+
+            // We don't need to check if we're at the instance play limit
+            // if we're resuming from a paused state.
+            if (State != SoundState.Paused)
+            {
+                SoundEffectInstancePool.Remove(this);
+
+                if (!SoundEffectInstancePool.SoundsAvailable)
+                    throw new InstancePlayLimitException();
+            }
+
+            PlatformPlay();
+        }
+
+        public void Resume()
+        {
+            PlatformResume();
+        }
+
+        public void Stop()
+        {
+            PlatformStop(true);
+        }
+
+        public void Stop(bool immediate)
+        {
+            
+            PlatformStop(immediate);
+
+            // instances typically call Stop
+            // as they dispose. Prevent this
+            // from being added to the SFXInstancePool
+            if (isDisposed)
+                return;
+
+            // Return this SFXInstance back
+            // to the pool to be used later.
+            SoundEffectInstancePool.Add(this);
+        }
+
+        public void Dispose()
+        {
+            if (isDisposed)
+                return;
+
+            isDisposed = true;
+
+            PlatformDispose();
+        }
+    }
 }

@@ -7,53 +7,49 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public class EffectPassCollection : IEnumerable<EffectPass>
     {
-		// Modified to be a list instead of dictionary object because a dictionary does not guarantee
-		// the order is kept as it is a hash key.
-		internal List<EffectPass> _passes = new List<EffectPass>();
-        //Dictionary<string, EffectPass> _passes = new Dictionary<string, EffectPass>();
-        private EffectTechnique _effectTechnique;
+		private readonly EffectPass[] _passes;
 
-        public EffectPassCollection(EffectTechnique effectTechnique)
+        internal EffectPassCollection(EffectPass [] passes)
         {
-            _effectTechnique = effectTechnique;
-			
+            _passes = passes;
+        }
+
+        internal EffectPassCollection Clone(Effect effect)
+        {
+            var passes = new EffectPass[_passes.Length];
+            for (var i = 0; i < _passes.Length; i++)
+                passes[i] = new EffectPass(effect, _passes[i]);
+
+            return new EffectPassCollection(passes);
         }
 
         public EffectPass this[int index]
         {
             get { return _passes[index]; }
-            set { 
-				_passes[index] = value; 
-			}
         }
 
         public EffectPass this[string name]
         {
-            get {
-				foreach (EffectPass pass in _passes) {
+            get 
+            {
+                // TODO: Add a name to pass lookup table.
+				foreach (var pass in _passes) 
+                {
 					if (pass.Name == name)
 						return pass;
 				}
 				return null;
-		}
-            set {
-
-				var pass = this[name];
-				if (pass != null)
-					pass = value;
-				else
-					_passes.Add(value);
-			}
+		    }
         }
 
         public int Count
         {
-            get { return _passes.Count; }
+            get { return _passes.Length; }
         }
 
-        public IEnumerator<EffectPass> GetEnumerator()
+        IEnumerator<EffectPass> IEnumerable<EffectPass>.GetEnumerator()
         {
-            return _passes.GetEnumerator();
+            return ((IEnumerable<EffectPass>)_passes).GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()

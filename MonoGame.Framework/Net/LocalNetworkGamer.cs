@@ -59,6 +59,12 @@ namespace Microsoft.Xna.Framework.Net
 			sig = new SignedInGamer ();
 			receivedData = new Queue<CommandReceiveData>();
 		}
+		
+		public LocalNetworkGamer (AsyncCallback callback) : base(null, 0, 0)
+		{
+			sig = new SignedInGamer (callback);
+			receivedData = new Queue<CommandReceiveData>();
+		}
 
 		public LocalNetworkGamer (NetworkSession session,byte id,GamerStates state)
 			: base(session, id, state | GamerStates.Local)
@@ -67,12 +73,14 @@ namespace Microsoft.Xna.Framework.Net
 			receivedData = new Queue<CommandReceiveData>();
 		}
 
+        /*
 		public void EnableSendVoice (
 			NetworkGamer remoteGamer, 
 			bool enable)
 		{
 			throw new NotImplementedException ();
 		}
+        */
 
 		public int ReceiveData (
 			byte[] data, 

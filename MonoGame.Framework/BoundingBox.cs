@@ -31,16 +31,22 @@ SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework
 {
+    [DataContract]
     public struct BoundingBox : IEquatable<BoundingBox>
     {
 
         #region Public Fields
 
+        [DataMember]
         public Vector3 Min;
+      
+        [DataMember]
         public Vector3 Max;
+
         public const int CornerCount = 8;
 
         #endregion Public Fields
@@ -128,28 +134,81 @@ namespace Microsoft.Xna.Framework
 
         public ContainmentType Contains(BoundingSphere sphere)
         {
-            if (sphere.Center.X - Min.X > sphere.Radius
-                && sphere.Center.Y - Min.Y > sphere.Radius
-                && sphere.Center.Z - Min.Z > sphere.Radius
-                && Max.X - sphere.Center.X > sphere.Radius
-                && Max.Y - sphere.Center.Y > sphere.Radius
-                && Max.Z - sphere.Center.Z > sphere.Radius)
+            if (sphere.Center.X - Min.X >= sphere.Radius
+                && sphere.Center.Y - Min.Y >= sphere.Radius
+                && sphere.Center.Z - Min.Z >= sphere.Radius
+                && Max.X - sphere.Center.X >= sphere.Radius
+                && Max.Y - sphere.Center.Y >= sphere.Radius
+                && Max.Z - sphere.Center.Z >= sphere.Radius)
                 return ContainmentType.Contains;
 
             double dmin = 0;
 
-            if (sphere.Center.X - Min.X <= sphere.Radius)
-                dmin += (sphere.Center.X - Min.X) * (sphere.Center.X - Min.X);
-            else if (Max.X - sphere.Center.X <= sphere.Radius)
-                dmin += (sphere.Center.X - Max.X) * (sphere.Center.X - Max.X);
-            if (sphere.Center.Y - Min.Y <= sphere.Radius)
-                dmin += (sphere.Center.Y - Min.Y) * (sphere.Center.Y - Min.Y);
-            else if (Max.Y - sphere.Center.Y <= sphere.Radius)
-                dmin += (sphere.Center.Y - Max.Y) * (sphere.Center.Y - Max.Y);
-            if (sphere.Center.Z - Min.Z <= sphere.Radius)
-                dmin += (sphere.Center.Z - Min.Z) * (sphere.Center.Z - Min.Z);
-            else if (Max.Z - sphere.Center.Z <= sphere.Radius)
-                dmin += (sphere.Center.Z - Max.Z) * (sphere.Center.Z - Max.Z);
+            double e = sphere.Center.X - Min.X;
+            if (e < 0)
+            {
+                if (e < -sphere.Radius)
+                {
+                    return ContainmentType.Disjoint;
+                }
+                dmin += e * e;
+            }
+            else
+            {
+                e = sphere.Center.X - Max.X;
+                if (e > 0)
+                {
+                    if (e > sphere.Radius)
+                    {
+                        return ContainmentType.Disjoint;
+                    }
+                    dmin += e * e;
+                }
+            }
+
+            e = sphere.Center.Y - Min.Y;
+            if (e < 0)
+            {
+                if (e < -sphere.Radius)
+                {
+                    return ContainmentType.Disjoint;
+                }
+                dmin += e * e;
+            }
+            else
+            {
+                e = sphere.Center.Y - Max.Y;
+                if (e > 0)
+                {
+                    if (e > sphere.Radius)
+                    {
+                        return ContainmentType.Disjoint;
+                    }
+                    dmin += e * e;
+                }
+            }
+
+            e = sphere.Center.Z - Min.Z;
+            if (e < 0)
+            {
+                if (e < -sphere.Radius)
+                {
+                    return ContainmentType.Disjoint;
+                }
+                dmin += e * e;
+            }
+            else
+            {
+                e = sphere.Center.Z - Max.Z;
+                if (e > 0)
+                {
+                    if (e > sphere.Radius)
+                    {
+                        return ContainmentType.Disjoint;
+                    }
+                    dmin += e * e;
+                }
+            }
 
             if (dmin <= sphere.Radius * sphere.Radius)
                 return ContainmentType.Intersects;
@@ -190,51 +249,72 @@ namespace Microsoft.Xna.Framework
                 result = ContainmentType.Intersects;
             else
                 result = ContainmentType.Contains;
-
-
         }
 
+        private static readonly Vector3 MaxVector3 = new Vector3(float.MaxValue);
+        private static readonly Vector3 MinVector3 = new Vector3(float.MinValue);
+
+        /// <summary>
+        /// Create a bounding box from the given list of points.
+        /// </summary>
+        /// <param name="points">The list of Vector3 instances defining the point cloud to bound</param>
+        /// <returns>A bounding box that encapsulates the given point cloud.</returns>
+        /// <exception cref="System.ArgumentException">Thrown if the given list has no points.</exception>
         public static BoundingBox CreateFromPoints(IEnumerable<Vector3> points)
         {
             if (points == null)
                 throw new ArgumentNullException();
 
-            // TODO: Just check that Count > 0
-            bool empty = true;
-            Vector3 vector2 = new Vector3(float.MaxValue);
-            Vector3 vector1 = new Vector3(float.MinValue);
-            foreach (Vector3 vector3 in points)
+            var empty = true;
+            var minVec = MaxVector3;
+            var maxVec = MinVector3;
+            foreach (var ptVector in points)
             {
-                vector2 = Vector3.Min(vector2, vector3);
-                vector1 = Vector3.Max(vector1, vector3);
+                minVec.X = (minVec.X < ptVector.X) ? minVec.X : ptVector.X;
+                minVec.Y = (minVec.Y < ptVector.Y) ? minVec.Y : ptVector.Y;
+                minVec.Z = (minVec.Z < ptVector.Z) ? minVec.Z : ptVector.Z;
+
+                maxVec.X = (maxVec.X > ptVector.X) ? maxVec.X : ptVector.X;
+                maxVec.Y = (maxVec.Y > ptVector.Y) ? maxVec.Y : ptVector.Y;
+                maxVec.Z = (maxVec.Z > ptVector.Z) ? maxVec.Z : ptVector.Z;
+
                 empty = false;
             }
             if (empty)
                 throw new ArgumentException();
 
-            return new BoundingBox(vector2, vector1);
+            return new BoundingBox(minVec, maxVec);
         }
 
         public static BoundingBox CreateFromSphere(BoundingSphere sphere)
         {
-            Vector3 vector1 = new Vector3(sphere.Radius);
-            return new BoundingBox(sphere.Center - vector1, sphere.Center + vector1);
+            BoundingBox result;
+            CreateFromSphere(ref sphere, out result);
+            return result;
         }
 
         public static void CreateFromSphere(ref BoundingSphere sphere, out BoundingBox result)
         {
-            result = BoundingBox.CreateFromSphere(sphere);
+            var corner = new Vector3(sphere.Radius);
+            result.Min = sphere.Center - corner;
+            result.Max = sphere.Center + corner;
         }
 
         public static BoundingBox CreateMerged(BoundingBox original, BoundingBox additional)
         {
-            return new BoundingBox(
-                Vector3.Min(original.Min, additional.Min), Vector3.Max(original.Max, additional.Max));
+            BoundingBox result;
+            CreateMerged(ref original, ref additional, out result);
+            return result;
         }
 
         public static void CreateMerged(ref BoundingBox original, ref BoundingBox additional, out BoundingBox result)
         {
-            result = BoundingBox.CreateMerged(original, additional);
+            result.Min.X = Math.Min(original.Min.X, additional.Min.X);
+            result.Min.Y = Math.Min(original.Min.Y, additional.Min.Y);
+            result.Min.Z = Math.Min(original.Min.Z, additional.Min.Z);
+            result.Max.X = Math.Max(original.Max.X, additional.Max.X);
+            result.Max.Y = Math.Max(original.Max.Y, additional.Max.Y);
+            result.Max.Z = Math.Max(original.Max.Z, additional.Max.Z);
         }
 
         public bool Equals(BoundingBox other)
@@ -372,28 +452,66 @@ namespace Microsoft.Xna.Framework
 
         public PlaneIntersectionType Intersects(Plane plane)
         {
-            //check all corner side of plane
-            Vector3[] corners = this.GetCorners();
-            float lastdistance = Vector3.Dot(plane.Normal, corners[0]) + plane.D;
-
-            for (int i = 1; i < corners.Length; i++)
-            {
-                float distance = Vector3.Dot(plane.Normal, corners[i]) + plane.D;
-                if ((distance <= 0.0f && lastdistance > 0.0f) || (distance >= 0.0f && lastdistance < 0.0f))
-                    return PlaneIntersectionType.Intersecting;
-                lastdistance = distance;
-            }
-
-            if (lastdistance > 0.0f)
-                return PlaneIntersectionType.Front;
-
-            return PlaneIntersectionType.Back;
-
+            PlaneIntersectionType result;
+            Intersects(ref plane, out result);
+            return result;
         }
 
         public void Intersects(ref Plane plane, out PlaneIntersectionType result)
         {
-            result = Intersects(plane);
+            // See http://zach.in.tu-clausthal.de/teaching/cg_literatur/lighthouse3d_view_frustum_culling/index.html
+
+            Vector3 positiveVertex;
+            Vector3 negativeVertex;
+
+            if (plane.Normal.X >= 0)
+            {
+                positiveVertex.X = Max.X;
+                negativeVertex.X = Min.X;
+            }
+            else
+            {
+                positiveVertex.X = Min.X;
+                negativeVertex.X = Max.X;
+            }
+
+            if (plane.Normal.Y >= 0)
+            {
+                positiveVertex.Y = Max.Y;
+                negativeVertex.Y = Min.Y;
+            }
+            else
+            {
+                positiveVertex.Y = Min.Y;
+                negativeVertex.Y = Max.Y;
+            }
+
+            if (plane.Normal.Z >= 0)
+            {
+                positiveVertex.Z = Max.Z;
+                negativeVertex.Z = Min.Z;
+            }
+            else
+            {
+                positiveVertex.Z = Min.Z;
+                negativeVertex.Z = Max.Z;
+            }
+
+            var distance = Vector3.Dot(plane.Normal, negativeVertex) + plane.D;
+            if (distance > 0)
+            {
+                result = PlaneIntersectionType.Front;
+                return;
+            }
+
+            distance = Vector3.Dot(plane.Normal, positiveVertex) + plane.D;
+            if (distance < 0)
+            {
+                result = PlaneIntersectionType.Back;
+                return;
+            }
+
+            result = PlaneIntersectionType.Intersecting;
         }
 
         public Nullable<float> Intersects(Ray ray)
@@ -424,4 +542,3 @@ namespace Microsoft.Xna.Framework
         #endregion Public Methods
     }
 }
-

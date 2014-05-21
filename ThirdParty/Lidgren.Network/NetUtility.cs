@@ -16,13 +16,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRA
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-#if !ANDROID && !IOS
+#if !ANDROID && !IOS && !PSM 
 #define IS_FULL_NET_AVAILABLE
 #endif
 
 using System;
 using System.Net;
+#if IS_FULL_NET_AVAILABLE
 using System.Net.NetworkInformation;
+#endif
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -160,6 +162,9 @@ namespace Lidgren.Network
 			return new string(c);
 		}
 		
+		/// <summary>
+		/// Gets broadcast IP address, or IPAddress.Broadcast if an exception occurs.
+		/// </summary>
 		public static IPAddress GetBroadcastAddress()
 		{
 #if ANDROID
@@ -244,7 +249,6 @@ namespace Lidgren.Network
 			}
 			catch // Catch Access Denied errors
 			{
-				return null;
 			}
 				
 #endif			
@@ -261,7 +265,9 @@ namespace Lidgren.Network
 			{
 				if (unicastAddress != null && unicastAddress.Address != null && unicastAddress.Address.AddressFamily == AddressFamily.InterNetwork)
 				{
+#if !MONOMAC
 					mask = unicastAddress.IPv4Mask;
+#endif
 					return unicastAddress.Address;
 				}
 			}

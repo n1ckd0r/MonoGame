@@ -45,25 +45,77 @@ using System;
 namespace Microsoft.Xna.Framework.Graphics
 {
 	// http://msdn.microsoft.com/en-us/library/ff434403.aspx
-	// TODO: Implement RenderTargetCube
 	public struct RenderTargetBinding
 	{
-		internal Texture _renderTarget;
-		internal bool isTargetCube;
+        private readonly Texture _renderTarget;
+        private readonly int _arraySlice;
 
-		public RenderTargetBinding (RenderTarget2D renderTarget)
-			{
-			if (renderTarget == null) {
-				throw new ArgumentNullException ("renderTarget");
-			}
+		public Texture RenderTarget 
+        {
+			get { return _renderTarget; }
+		}
+
+        public int ArraySlice
+        {
+            get { return _arraySlice; }
+        }
+
+		public RenderTargetBinding(RenderTarget2D renderTarget)
+		{
+			if (renderTarget == null) 
+				throw new ArgumentNullException("renderTarget");
+
 			_renderTarget = renderTarget;
-			isTargetCube = false;
+            _arraySlice = (int)CubeMapFace.PositiveX;
 		}
 
-		public Texture RenderTarget {
-			get {
-				return _renderTarget;
-			}
-		}
+        public RenderTargetBinding(RenderTargetCube renderTarget, CubeMapFace cubeMapFace)
+        {
+            if (renderTarget == null)
+                throw new ArgumentNullException("renderTarget");
+            if (cubeMapFace < CubeMapFace.PositiveX || cubeMapFace > CubeMapFace.NegativeZ)
+                throw new ArgumentOutOfRangeException("cubeMapFace");
+
+            _renderTarget = renderTarget;
+            _arraySlice = (int)cubeMapFace;
+        }
+
+#if DIRECTX
+
+        public RenderTargetBinding(RenderTarget3D renderTarget)
+        {
+            if (renderTarget == null)
+                throw new ArgumentNullException("renderTarget");
+
+            _renderTarget = renderTarget;
+            _arraySlice = 0;
+        }
+
+        public RenderTargetBinding(RenderTarget3D renderTarget, int arraySlice)
+        {
+            if (renderTarget == null)
+                throw new ArgumentNullException("renderTarget");
+            if (arraySlice < 0 || arraySlice >= renderTarget.Depth)
+                throw new ArgumentOutOfRangeException("arraySlice");
+
+            _renderTarget = renderTarget;
+            _arraySlice = arraySlice;
+        }
+
+#endif 
+
+        public static implicit operator RenderTargetBinding(RenderTarget2D renderTarget)
+        {
+            return new RenderTargetBinding(renderTarget);
+        }
+
+#if DIRECTX
+
+        public static implicit operator RenderTargetBinding(RenderTarget3D renderTarget)
+        {
+            return new RenderTargetBinding(renderTarget);
+        }
+
+#endif
 	}
 }

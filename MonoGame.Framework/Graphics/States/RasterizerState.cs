@@ -1,8 +1,18 @@
+// MonoGame - Copyright (C) The MonoGame Team
+// This file is subject to the terms and conditions defined in
+// file 'LICENSE.txt', which is part of this source code package.
+
 using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+
 namespace Microsoft.Xna.Framework.Graphics
 {
-	public class RasterizerState : GraphicsResource
+	public partial class RasterizerState : GraphicsResource
 	{
+        // TODO: We should be asserting if the state has
+        // been changed after it has been bound to the device!
+
         public CullMode CullMode { get; set; }
         public float DepthBias { get; set; }
         public FillMode FillMode { get; set; }
@@ -10,29 +20,50 @@ namespace Microsoft.Xna.Framework.Graphics
         public bool ScissorTestEnable { get; set; }
         public float SlopeScaleDepthBias { get; set; }
 
-		public static readonly RasterizerState CullClockwise;		
-		public static readonly RasterizerState CullCounterClockwise;
-		public static readonly RasterizerState CullNone;
+		private static readonly Utilities.ObjectFactoryWithReset<RasterizerState> _cullClockwise;
+        private static readonly Utilities.ObjectFactoryWithReset<RasterizerState> _cullCounterClockwise;
+        private static readonly Utilities.ObjectFactoryWithReset<RasterizerState> _cullNone;
 
-		public RasterizerState ()
+        public static RasterizerState CullClockwise { get { return _cullClockwise.Value; } }
+        public static RasterizerState CullCounterClockwise { get { return _cullCounterClockwise.Value; } }
+        public static RasterizerState CullNone { get { return _cullNone.Value; } }
+        
+        public RasterizerState()
 		{
-			// Default is counter clockwise as per documentation
 			CullMode = CullMode.CullCounterClockwiseFace;
-			// Default is Solid as per documentation
 			FillMode = FillMode.Solid;
+			DepthBias = 0;
+			MultiSampleAntiAlias = true;
+			ScissorTestEnable = false;
+			SlopeScaleDepthBias = 0;
 		}
 
 		static RasterizerState ()
 		{
-			CullClockwise = new RasterizerState () {
+			_cullClockwise = new Utilities.ObjectFactoryWithReset<RasterizerState>(() => new RasterizerState
+            {
+                Name = "RasterizerState.CullClockwise",
 				CullMode = CullMode.CullClockwiseFace
-			};
-			CullCounterClockwise = new RasterizerState () {
+			});
+
+			_cullCounterClockwise = new Utilities.ObjectFactoryWithReset<RasterizerState>(() => new RasterizerState
+            {
+                Name = "RasterizerState.CullCounterClockwise",
 				CullMode = CullMode.CullCounterClockwiseFace
-			};
-			CullNone = new RasterizerState () {
+			});
+
+			_cullNone = new Utilities.ObjectFactoryWithReset<RasterizerState>(() => new RasterizerState
+            {
+                Name = "RasterizerState.CullNone",
 				CullMode = CullMode.None
-			};
+			});
 		}
-	}
+
+        internal static void ResetStates()
+        {
+            _cullClockwise.Reset();
+            _cullCounterClockwise.Reset();
+            _cullNone.Reset();
+        }
+    }
 }

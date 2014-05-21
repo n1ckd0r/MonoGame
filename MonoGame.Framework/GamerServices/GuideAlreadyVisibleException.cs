@@ -39,13 +39,12 @@
 #endregion License
 
 using System;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework.GamerServices
 {
-#if !WINDOWS_PHONE
-	[SerializableAttribute]
-#endif
-	public class GuideAlreadyVisibleException : Exception
+    [DataContract]
+    public class GuideAlreadyVisibleException : Exception
 	{
 
 		public GuideAlreadyVisibleException ()

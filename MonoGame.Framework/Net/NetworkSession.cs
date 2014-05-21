@@ -94,14 +94,18 @@ namespace Microsoft.Xna.Framework.Net
 			activeSessions.Add(this);
 		}
 		
+        ~NetworkSession()
+        {
+            Dispose(false);
+        }
+
 		private NetworkSessionType sessionType;
 		private int maxGamers;
 		private int privateGamerSlots;
 		private NetworkSessionProperties sessionProperties;
 		private bool isHost = false;
-		private int hostGamerIndex = -1;
 		private NetworkGamer hostingGamer;
-		
+
 		internal MonoGamerPeer networkPeer;
 		
 		private NetworkSession (NetworkSessionType sessionType, int maxGamers, int privateGamerSlots, NetworkSessionProperties sessionProperties, bool isHost, int hostGamer)
@@ -143,7 +147,6 @@ namespace Microsoft.Xna.Framework.Net
 			this.privateGamerSlots = privateGamerSlots;
 			this.sessionProperties = sessionProperties;
 			this.isHost = isHost;
-			this.hostGamerIndex = hostGamer;            
             if (isHost)
                 networkPeer = new MonoGamerPeer(this, null);
             else
@@ -237,29 +240,33 @@ namespace Microsoft.Xna.Framework.Net
 		public void Dispose ()
 		{
 			this.Dispose(true);
-			GC.SuppressFinalize (this);				
+			GC.SuppressFinalize(this);				
 		}
 		
 		public void Dispose (bool disposing) 
 		{
-#if DEBUG
-			Console.WriteLine("Network Session Disposing");
-#endif
-			if (disposing) {
-				
-				foreach (Gamer gamer in _allGamers) {
-					gamer.Dispose();
-				}
-				//Console.WriteLine("disposing");
-				// Make sure we shut down our server instance as we no longer need it.
-				if (networkPeer != null) {
-					networkPeer.ShutDown();
-				}
-				if (networkPeer != null) {
-					networkPeer.ShutDown();					
-				}				
-				this._isDisposed = true;
-			}
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    foreach (Gamer gamer in _allGamers)
+                    {
+                        gamer.Dispose();
+                    }
+
+                    // Make sure we shut down our server instance as we no longer need it.
+                    if (networkPeer != null)
+                    {
+                        networkPeer.ShutDown();
+                    }
+                    if (networkPeer != null)
+                    {
+                        networkPeer.ShutDown();
+                    }
+                }
+
+                this._isDisposed = true;
+            }
 		}
 
 	#endregion
@@ -418,6 +425,7 @@ namespace Microsoft.Xna.Framework.Net
 			}
 		}
 
+        /*
 		public static IAsyncResult BeginJoinInvited (
 			IEnumerable<SignedInGamer> localGamers,
 			AsyncCallback callback,
@@ -443,8 +451,9 @@ namespace Microsoft.Xna.Framework.Net
 			} finally {
 			}
 		}
+        */
 
-		public static NetworkSession EndCreate (IAsyncResult result)
+        public static NetworkSession EndCreate (IAsyncResult result)
 		{
 			NetworkSession returnValue = null;
 			try {
@@ -538,6 +547,7 @@ namespace Microsoft.Xna.Framework.Net
 			return returnValue;
 		}
 
+        /*
 		public static NetworkSession EndJoinInvited (IAsyncResult result)
 		{
 			NetworkSession returnValue = null;
@@ -561,6 +571,7 @@ namespace Microsoft.Xna.Framework.Net
 			}
 			return returnValue;
 		}
+        */
 
 		public static AvailableNetworkSessionCollection Find (
 			NetworkSessionType sessionType,
@@ -645,6 +656,7 @@ namespace Microsoft.Xna.Framework.Net
 			return session;		
 		}
 		
+        /*
 		public static NetworkSession JoinInvited (IEnumerable<SignedInGamer> localGamers)
 		{
 			try {
@@ -652,7 +664,7 @@ namespace Microsoft.Xna.Framework.Net
 			} finally {
 			}
 		}
-
+        
 		public static NetworkSession JoinInvited (int maxLocalGamers)
 		{
 			if (maxLocalGamers < 1 || maxLocalGamers > 4)
@@ -663,7 +675,8 @@ namespace Microsoft.Xna.Framework.Net
 			} finally {
 			}
 		}
-		
+		*/
+
 		// I am not really sure how this is suppose to work so am just fleshing it in
 		//  for the way I think it should.  This will also send a message to all connected
 		//  peers for a state change.
@@ -725,9 +738,12 @@ namespace Microsoft.Xna.Framework.Net
 				}
 			} 
 			catch (Exception exc) {
+                if (exc != null)
+                {
 #if DEBUG				
 				Console.WriteLine("Error in NetworkSession Update: " + exc.Message);
-#endif	
+#endif
+                }
 			}
 			finally {
 			}
@@ -743,7 +759,6 @@ namespace Microsoft.Xna.Framework.Net
 		{
 			networkPeer.SendData(command.data, command.options);
 
-			NetworkGamer sender;
 			CommandReceiveData crd = new CommandReceiveData (command.sender.RemoteUniqueIdentifier,
 								command.data);
 			crd.gamer = command.sender;
@@ -938,6 +953,7 @@ namespace Microsoft.Xna.Framework.Net
 			}
 		}
 
+        /*
 		public int BytesPerSecondReceived { 
 			get {
 				throw new NotImplementedException ();
@@ -949,6 +965,7 @@ namespace Microsoft.Xna.Framework.Net
 				throw new NotImplementedException ();
 			}
 		}
+        */
 
 		public NetworkGamer Host { 
 			get {
@@ -1087,6 +1104,14 @@ namespace Microsoft.Xna.Framework.Net
 		public event EventHandler<HostChangedEventArgs> HostChanged;
 		public static event EventHandler<InviteAcceptedEventArgs> InviteAccepted;
 		public event EventHandler<NetworkSessionEndedEventArgs> SessionEnded;
+
+        private bool SuppressEventHandlerWarningsUntilEventsAreProperlyImplemented()
+        {
+            return
+                HostChanged != null &&
+                InviteAccepted != null;
+        }
+
 		#endregion
 
         internal static void Exit()

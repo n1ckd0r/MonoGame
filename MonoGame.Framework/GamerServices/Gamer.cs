@@ -39,17 +39,23 @@ purpose and non-infringement.
 #endregion License
 
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework.GamerServices
 {
+    [DataContract]
     public abstract class Gamer
     {
         static SignedInGamerCollection _signedInGamers = new SignedInGamerCollection();
         string _gamer = "MonoGame";
-        bool _isDisposed;
         Object _tag;
+        bool disposed;
+
+        LeaderboardWriter _leaderboardWriter;
 
         #region Methods
+
+        /*
         public IAsyncResult BeginGetProfile( AsyncCallback callback, Object asyncState )
         {
             throw new NotImplementedException();
@@ -64,35 +70,28 @@ namespace Microsoft.Xna.Framework.GamerServices
         {
             throw new NotImplementedException();
         }
+        */
 
         public override string ToString()
         {
             return _gamer;
         }
-		
-		public void Dispose(bool disposing)
-		{
-			if (disposing) {
-				_isDisposed = true;
-				/*foreach (var gamer in _signedInGamers) {
-					gamer.Dispose();
-				}*/
-			}
-		}
-		
-		public void Dispose()
-		{
-			this.Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+
+        internal void Dispose()
+        {
+            disposed = true;
+        }
+
         #endregion
         #region Properties
-		public string DisplayName 
+        [DataMember]
+        public string DisplayName 
         {
             get;
 			internal set;
         }
-		
+
+        [DataMember]
         public string Gamertag 
         {
             get
@@ -106,11 +105,12 @@ namespace Microsoft.Xna.Framework.GamerServices
 			}
         }
 
-        public bool IsDisposed 
+        [DataMember]
+        public bool IsDisposed
         {
             get
             {
-                return _isDisposed;
+                return disposed;
             }
         }
 
@@ -134,6 +134,19 @@ namespace Microsoft.Xna.Framework.GamerServices
             get
             {
                 return _signedInGamers;
+            }
+        }
+
+        public LeaderboardWriter LeaderboardWriter 
+        { 
+            get
+            {
+                return _leaderboardWriter;
+            }
+
+            internal set 
+            {
+                _leaderboardWriter = value;
             }
         }
         #endregion
