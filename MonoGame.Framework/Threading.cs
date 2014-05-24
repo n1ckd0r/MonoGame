@@ -51,7 +51,7 @@ using OpenTK.Graphics.ES11;
 #else
 using OpenTK.Graphics.ES20;
 #endif
-#elif WINDOWS || LINUX
+#elif WINDOWS || LINUX || ANGLE
 using OpenTK.Graphics;
 using OpenTK.Platform;
 using OpenTK;
@@ -69,7 +69,7 @@ namespace Microsoft.Xna.Framework
         //static Mutex actionsMutex = new Mutex();
 #elif IOS
         public static EAGLContext BackgroundContext;
-#elif WINDOWS || LINUX
+#elif WINDOWS || LINUX || ANGLE
         public static IGraphicsContext BackgroundContext;
         public static IWindowInfo WindowInfo;
 #endif
@@ -129,7 +129,7 @@ namespace Microsoft.Xna.Framework
                 GL.Flush();
                 GraphicsExtensions.CheckGLError();
             }
-#elif WINDOWS || LINUX
+#elif WINDOWS || LINUX || ANGLE
             lock (BackgroundContext)
             {
                 // Make the context current on this thread
@@ -152,7 +152,7 @@ namespace Microsoft.Xna.Framework
             {
 #if ANDROID
                 //if (!Game.Instance.Window.GraphicsContext.IsCurrent)
-                Game.Instance.Window.MakeCurrent();
+                ((AndroidGameWindow)Game.Instance.Window).GameView.MakeCurrent();
 #endif
                 action();
                 resetEvent.Set();

@@ -147,6 +147,8 @@ namespace Microsoft.Xna.Framework.GamerServices
 
 	public static class Guide
 	{
+		private static int _showKeyboardInputRequestCount;
+
 		private static GKLeaderboardViewController leaderboardController;
 		private static GKAchievementViewController achievementController;
 		private static GKPeerPickerController peerPickerController;
@@ -217,68 +219,6 @@ namespace Microsoft.Xna.Framework.GamerServices
 					"Gamer services functionality has not been initialized.");
 		}
 
-        delegate string ShowKeyboardInputDelegate(
-            string title, string description, string defaultText, Object state, bool usePasswordMode);
-
-        private static string ShowKeyboardInput(
-            string title, string description, string defaultText, Object state, bool usePasswordMode)
-        {
-            string result = null;
-
-            IsVisible = true;
-            EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-
-            keyboardViewController = new KeyboardInputViewController(
-                title, description, defaultText, usePasswordMode, _gameViewController);
-
-            UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-                _gameViewController.PresentViewController (keyboardViewController, true, null);
-
-                keyboardViewController.View.InputAccepted += (sender, e) => {
-                    _gameViewController.DismissViewController (true, null);
-                    result = keyboardViewController.View.Text;
-                    waitHandle.Set ();
-                };
-
-                keyboardViewController.View.InputCanceled += (sender, e) => {
-                    _gameViewController.DismissViewController (true, null);
-                    waitHandle.Set ();
-                };
-            });
-            waitHandle.WaitOne ();
-
-            IsVisible = false;
-            return result;
-        }
-
-		public static IAsyncResult BeginShowKeyboardInput (
-			PlayerIndex player, string title, string description, string defaultText,
-			AsyncCallback callback, Object state)
-		{
-			AssertInitialised ();
-			return BeginShowKeyboardInput(player, title, description, defaultText, callback, state, false );
-		}
-
-		public static IAsyncResult BeginShowKeyboardInput (
-			PlayerIndex player, string title, string description, string defaultText,
-			AsyncCallback callback, Object state, bool usePasswordMode)
-		{
-			AssertInitialised ();
-
-            if (IsVisible)
-                throw new GuideAlreadyVisibleException("The function cannot be completed at this time: the Guide UI is already active. Wait until Guide.IsVisible is false before issuing this call.");
-
-            ShowKeyboardInputDelegate ski = ShowKeyboardInput;
-
-            return ski.BeginInvoke(title, description, defaultText, state, usePasswordMode, callback, ski);
-		}
-
-		public static string EndShowKeyboardInput (IAsyncResult result)
-		{
-            keyboardViewController = null;
-            return (result.AsyncState as ShowKeyboardInputDelegate).EndInvoke (result);
-		}
-
 		delegate Nullable<int> ShowMessageBoxDelegate(
 			string title, string text, IEnumerable<string> buttons, int focusButton, MessageBoxIcon icon);
 
@@ -322,7 +262,7 @@ namespace Microsoft.Xna.Framework.GamerServices
 
 			ShowMessageBoxDelegate smb = ShowMessageBox; 
 
-            return smb.BeginInvoke(title, text, buttons, focusButton, icon, callback, smb);			
+			return smb.BeginInvoke(title, text, buttons, focusButton, icon, callback, smb);			
 		}
 
 		public static IAsyncResult BeginShowMessageBox (
@@ -380,8 +320,9 @@ namespace Microsoft.Xna.Framework.GamerServices
 				GamerServicesComponent.LocalNetworkGamer.SignedInGamer.BeginAuthentication(null, null);
 			}
 		}
-		
-		public static void ShowSignIn(int paneCount, bool onlineOnly, AsyncCallback callback) {
+
+		public static void ShowSignIn (int paneCount, bool onlineOnly, AsyncCallback callback)
+		{
 			AssertInitialised ();
 
 			if ( paneCount != 1 )
@@ -396,10 +337,10 @@ namespace Microsoft.Xna.Framework.GamerServices
 			}
 			else
 			{
-				GamerServicesComponent.LocalNetworkGamer.SignedInGamer.BeginAuthentication(callback, null);
+				GamerServicesComponent.LocalNetworkGamer.SignedInGamer.BeginAuthentication(null, null);
 			}
 		}
-
+		
 		public static void ShowLeaderboard()
 		{
 			AssertInitialised ();

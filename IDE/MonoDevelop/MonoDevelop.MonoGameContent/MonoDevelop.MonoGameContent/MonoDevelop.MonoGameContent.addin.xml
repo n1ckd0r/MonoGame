@@ -14,7 +14,6 @@
 		<Import file="icons/monogame-icon.png"/>
 		<Import file="AssimpNet.dll"/>
 		<Import file="AssimpNet.dll.config"/>
-		<Import file="Lidgren.Network.dll"/>
 		<Import file="ManagedPVRTC.dll"/>
 		<Import file="ManagedPVRTC.dll.config"/>
 		<Import file="MonoGame.Framework.Content.Pipeline.dll"/>
@@ -54,13 +53,11 @@
 		<Import file="nvtt.dll"/>
 		<Import file="pvrtc.dll"/>
 		<Import file="freetype6.dll"/>
-		<Import file="Assimp32.dll"/>
 		<Import file="Assimp64.dll"/>
 		<!-- Make sure we dont scan native dll's otherwise we get errors -->
 		<ScanExclude path="nvtt.dll"/>
 		<ScanExclude path="freetype6.dll"/>
 		<ScanExclude path="pvrtc.dll"/>
-		<ScanExclude path="Assimp32.dll"/>
 		<ScanExclude path="Assimp64.dll"/>
 		<ScanExclude path="libnvtt.so"/>
 		<ScanExclude path="libnvimage.so"/>

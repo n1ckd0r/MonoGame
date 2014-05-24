@@ -11,21 +11,11 @@ namespace MGCB
 {
     class Program
     {
-
-#if WINDOWS
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern bool SetDllDirectory(string lpPathName);
-#endif
-
         static int Main(string[] args)
         {
-#if WINDOWS
-            // Set the correct directory for our dependency files.
-            var is32Bit = IntPtr.Size == 4;
-            var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
-                string.Format("Dependencies{0}{1}", Path.DirectorySeparatorChar, is32Bit ? "x32" : "x64"));
-            SetDllDirectory(directory);
-#endif
+            // We force all stderr to redirect to stdout
+            // to avoid any out of order console output.
+            Console.SetError(Console.Out);
 
             var content = new BuildContent();
 
