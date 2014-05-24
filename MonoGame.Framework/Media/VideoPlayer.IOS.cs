@@ -37,7 +37,7 @@ namespace Microsoft.Xna.Framework.Media
 
         private void PlatformResume()
         {
-			_currentVideo.MovieView.MoviePlayer.Play ();
+            _currentVideo.MovieView.MoviePlayer.Play();
         }
 
         private void PlatformPlay()
@@ -63,8 +63,8 @@ namespace Microsoft.Xna.Framework.Media
             }
 
             _currentVideo.MovieView.MoviePlayer.Stop();
-			_platform.IsActive = false;
-			_platform.ViewController.DismissViewController(false, null);
+            _platform.IsPlayingVideo = false;
+            _platform.ViewController.DismissViewController(false, null);
         }
 
         private void OnStop(NSNotification e)

@@ -1,24 +1,18 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) The MonoGame Team
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
-#region Using Statements
 using System;
-using System.IO;
 
 #if ANDROID
-using Android.Content;
-using Android.Content.Res;
 using Android.Media;
-using Android.Util;
 #endif
 
 #if MONOMAC
 using MonoMac.OpenAL;
-#else
+#elif OPENAL
 using OpenTK.Audio.OpenAL;
 #endif
-#endregion Statements
 
 namespace Microsoft.Xna.Framework.Audio
 {
@@ -28,7 +22,7 @@ namespace Microsoft.Xna.Framework.Audio
 		private bool _looped = false;
 		int sourceId;
 
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if OPENAL
 
         private OALSoundBuffer soundBuffer;
         private OpenALSoundController controller;
@@ -46,8 +40,6 @@ namespace Microsoft.Xna.Framework.Audio
 
 		internal int _soundId = -1;
 
-		internal float _sampleRate;
-
 #endif
 
         #region Initialization
@@ -57,7 +49,7 @@ namespace Microsoft.Xna.Framework.Audio
         /// </summary>
         internal void PlatformInitialize(byte[] buffer, int sampleRate, int channels)
         {
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if WINDOWS || LINUX || MONOMAC || IOS || ANGLE
             InitializeSound();
             BindDataBuffer(
                 buffer,
@@ -71,7 +63,7 @@ namespace Microsoft.Xna.Framework.Audio
             // No-op on Android
         }
 
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if WINDOWS || LINUX || MONOMAC || IOS || ANGLE
 
         /// <summary>
         /// Preserves the given data buffer by reference and binds its contents to the OALSoundBuffer
@@ -81,7 +73,6 @@ namespace Microsoft.Xna.Framework.Audio
         /// <param name="format">The sound buffer data format, e.g. Mono, Mono16 bit, Stereo, etc.</param>
         /// <param name="size">The size of the data buffer</param>
         /// <param name="rate">The sampling rate of the sound effect, e.g. 44 khz, 22 khz.</param>
-        [CLSCompliant(false)]
         internal void BindDataBuffer(byte[] data, ALFormat format, int size, int rate)
         {
             soundBuffer.BindDataBuffer(data, format, size, rate);
@@ -125,11 +116,32 @@ namespace Microsoft.Xna.Framework.Audio
             hasSourceId = true;
         }
 
+#endif // WINDOWS || LINUX || MONOMAC || IOS
+
+#if ANDROID
+
         /// <summary>
-        /// Converts the XNA [-1,1] pitch range to OpenAL (-1,+INF].
+        /// Converts the XNA volume [0, 1] and pan [-1, 1] to Android SoundPool left and right volume [0, 1].
+        /// <param name="xnaVolume">The volume of the sound in the Microsoft XNA range.</param>
+        /// <param name="xnaPan">The pan of the sound in the Microsoft XNA range.</param>
+        /// <param name="leftVolume">Android SoundPool left volume.</param>
+        /// <param name="rightVolume">Android SoundPool right volume.</param>
+        /// </summary>
+        private static void XnaVolumeAndPanToAndroidVolume(float xnaVolume, float xnaPan, out float leftVolume, out float rightVolume)
+        {
+            float panRatio = (xnaPan + 1.0f) / 2.0f;
+            float volumeTotal = SoundEffect.MasterVolume * xnaVolume;
+            leftVolume = volumeTotal * (1.0f - panRatio);
+            rightVolume = volumeTotal * panRatio;
+        }
+
+#endif // ANDROID
+
+        /// <summary>
+        /// Converts the XNA [-1, 1] pitch range to OpenAL pitch (0, INF) or Android SoundPool playback rate [0.5, 2].
         /// <param name="xnaPitch">The pitch of the sound in the Microsoft XNA range.</param>
         /// </summary>
-        private float XnaPitchToAlPitch(float xnaPitch)
+        private static float XnaPitchToAlPitch(float xnaPitch)
         {
             /*XNA sets pitch bounds to [-1.0f, 1.0f], each end being one octave.
             •OpenAL's AL_PITCH boundaries are (0.0f, INF). *
@@ -147,8 +159,6 @@ namespace Microsoft.Xna.Framework.Audio
             return (float)Math.Pow(2, xnaPitch);
         }
 
-#endif // WINDOWS || LINUX || MONOMAC || IOS
-
         #endregion // Initialization
 
         private void PlatformApply3D(AudioListener listener, AudioEmitter emitter)
@@ -158,7 +168,7 @@ namespace Microsoft.Xna.Framework.Audio
 			// Appears to be a no-op on Android?
 #endif
 
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if OPENAL
 
             // get AL's listener position
             float x, y, z;
@@ -183,7 +193,7 @@ namespace Microsoft.Xna.Framework.Audio
         private void PlatformPause()
         {
 
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if OPENAL
 
             if (!hasSourceId || soundState != SoundState.Playing)
                 return;
@@ -203,7 +213,7 @@ namespace Microsoft.Xna.Framework.Audio
 
         private void PlatformPlay()
         {
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if OPENAL
 
             if (hasSourceId)
                 return;
@@ -233,7 +243,7 @@ namespace Microsoft.Xna.Framework.Audio
             controller.PlaySound (soundBuffer);
             //Console.WriteLine ("playing: " + sourceId + " : " + soundEffect.Name);
 
-#endif // WINDOWS || LINUX || MONOMAC || IOS
+#endif
 
 #if ANDROID
 
@@ -247,15 +257,12 @@ namespace Microsoft.Xna.Framework.Audio
 					sourceId = 0;
 				}
 
-				float panRatio = (_pan + 1.0f) / 2.0f;
-				float volumeTotal = SoundEffect.MasterVolume * _volume;
-				float volumeLeft = volumeTotal * (1.0f - panRatio);
-				float volumeRight = volumeTotal * panRatio;
+                float volumeLeft, volumeRight;
+                XnaVolumeAndPanToAndroidVolume(_volume, _pan, out volumeLeft, out volumeRight);
 
-				float rate = (float)Math.Pow(2, _sampleRate);
-				rate = Math.Max(Math.Min(rate, 2.0f), 0.5f);
+                float playbackRate = XnaPitchToAlPitch(_pitch);
 
-				sourceId = s_soundPool.Play(_soundId, volumeLeft, volumeRight, 1, _looped ? -1 : 0, _sampleRate);
+                sourceId = s_soundPool.Play(_soundId, volumeLeft, volumeRight, 1, _looped ? -1 : 0, playbackRate);
 			}
 #endif
             soundState = SoundState.Playing;
@@ -264,7 +271,7 @@ namespace Microsoft.Xna.Framework.Audio
         private void PlatformResume()
         {
 
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if OPENAL
 
             if (!hasSourceId)
             {
@@ -292,7 +299,7 @@ namespace Microsoft.Xna.Framework.Audio
         private void PlatformStop(bool immediate)
         {
 
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if OPENAL
 
             if (hasSourceId)
             {
@@ -316,7 +323,7 @@ namespace Microsoft.Xna.Framework.Audio
         private void PlatformSetIsLooped(bool value)
         {
 
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if OPENAL
             
             _looped = value;
             
@@ -327,73 +334,54 @@ namespace Microsoft.Xna.Framework.Audio
 #endif
 
 #if ANDROID
-			if (sourceId != 0 && _looped != value)
-				_looped = value;
+            if (sourceId != 0)
+                s_soundPool.SetLoop(sourceId, value ? -1 : 0);
+            _looped = value;
 #endif
         }
 
         private bool PlatformGetIsLooped()
         {
-#if WINDOWS || LINUX || MONOMAC || IOS
-            
             return _looped;
-#endif
-
-#if ANDROID
-
-			if (sourceId != 0)
-				return _looped;
-            
-            return false;
-#endif
         }
 
         private void PlatformSetPan(float value)
         {
 
-#if WINDOWS || LINUX || MONOMAC || IOS
-
-            _pan = value;
-			if (!hasSourceId)
-				return;
-            
-            AL.Source(sourceId, ALSource3f.Position, _pan, 0.0f, 0.1f);
-
+#if OPENAL
+            if (hasSourceId)
+                AL.Source(sourceId, ALSource3f.Position, value, 0.0f, 0.1f);
             return;
-
 #endif
-            
-#if ANDROID
 
-			if (sourceId != 0 && _pan != value)
-				_pan = value;
+#if ANDROID
+            if (sourceId != 0)
+            {
+                float leftVolume, rightVolume;
+                XnaVolumeAndPanToAndroidVolume(_volume, value, out leftVolume, out rightVolume);
+                s_soundPool.SetVolume(sourceId, leftVolume, rightVolume);
+            }
 #endif
         }
 
         private void PlatformSetPitch(float value)
         {
-#if WINDOWS || LINUX || MONOMAC || IOS
-            _pitch = value;
-
-			if (hasSourceId)
-				AL.Source (sourceId, ALSourcef.Pitch, XnaPitchToAlPitch(_pitch));
-
+#if OPENAL
+            if (hasSourceId)
+                AL.Source (sourceId, ALSourcef.Pitch, XnaPitchToAlPitch(value));
             return;
 #endif
 
 #if ANDROID
-
-            // TODO: This doesn't look right...
-
-			if (sourceId != 0 && _sampleRate != value)
-				_sampleRate = value;
+            if (sourceId != 0)
+                s_soundPool.SetRate(sourceId, XnaPitchToAlPitch(value));
 #endif
         }
 
         private SoundState PlatformGetState()
         {
 
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if OPENAL
 
             if (!hasSourceId)
                 return SoundState.Stopped;
@@ -437,25 +425,25 @@ namespace Microsoft.Xna.Framework.Audio
 
         private void PlatformSetVolume(float value)
         {
-
-#if WINDOWS || LINUX || MONOMAC || IOS
-
-            _volume = value;
-			if (hasSourceId)
-				AL.Source (sourceId, ALSourcef.Gain, _volume * SoundEffect.MasterVolume);
-
+#if OPENAL
+            if (hasSourceId)
+                AL.Source(sourceId, ALSourcef.Gain, value * SoundEffect.MasterVolume);
             return;
 #endif
 
 #if ANDROID
-			if (sourceId != 0 && _volume != value)
-				_volume = value;
+            if (sourceId != 0)
+            {
+                float leftVolume, rightVolume;
+                XnaVolumeAndPanToAndroidVolume(value, _pan, out leftVolume, out rightVolume);
+                s_soundPool.SetVolume(sourceId, leftVolume, rightVolume);
+            }
 #endif
         }
 
         private void PlatformDispose()
         {
-#if WINDOWS || LINUX || MONOMAC || IOS
+#if OPENAL
 
             this.Stop(true);
             soundBuffer.Reserved -= HandleSoundBufferReserved;

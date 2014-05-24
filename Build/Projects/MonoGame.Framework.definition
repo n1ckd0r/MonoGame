@@ -1,8 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Name="MonoGame.Framework" Path="MonoGame.Framework" Type="Library" Platforms="Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,Windows8,WindowsGL,WindowsPhone">
+<?xml version="1.0" encoding="utf-8"?>
+<Project Name="MonoGame.Framework" Path="MonoGame.Framework" Type="Library" Platforms="Android,Angle,iOS,Linux,MacOS,Ouya,PSMobile,Windows,Windows8,WindowsGL,WindowsPhone,Web">
 
   <ProjectGuids>
-	<Platform Name="Android">BA9476CF-99BA-4D03-92F2-73D2C5E58883</Platform>
+  	<Platform Name="Android">BA9476CF-99BA-4D03-92F2-73D2C5E58883</Platform>
+	<Platform Name="Angle">ECF3C8B9-0AAC-4C32-B184-FAE88F6244B5</Platform>
 	<Platform Name="iOS">DB8508BB-9849-4CC2-BC0F-8EB5DACB3C47</Platform>
 	<Platform Name="Linux">35253CE1-C864-4CD3-8249-4D1319748E8F</Platform>
 	<Platform Name="MacOS">36C538E6-C32A-4A8D-A39C-566173D7118E</Platform>
@@ -10,7 +11,7 @@
 	<Platform Name="PSMobile">EA26E76F-FDFE-4A8C-B5A3-C3B5761E28F9</Platform>
 	<Platform Name="Windows">7DE47032-A904-4C29-BD22-2D235E8D91BA</Platform>
 	<Platform Name="Windows8">0518563C-ACCA-4A14-8C5D-DDBE93E2605F</Platform>
-	<Platform Name="WindowsGL">7DE47032-A904-4C29-BD22-2D235E8D91BA</Platform>
+	<Platform Name="WindowsGL">6D75E618-19CA-4C51-9546-F10965FBC0B8</Platform>
 	<Platform Name="WindowsPhone">BAA9A6E4-7690-4DE0-9531-DE0EAEEC9739</Platform>
   </ProjectGuids>
 
@@ -24,6 +25,8 @@
   </References>
 
   <Properties>
+    
+    <NoWarn>1591,0436</NoWarn>
 
     <RootNamespace>Microsoft.Xna.Framework</RootNamespace>
 	<RemoveXnaAssembliesOnWP8>false</RemoveXnaAssembliesOnWP8>
@@ -31,15 +34,17 @@
 
     <CustomDefinitions>
       <Platform Name="Android">TRACE;ANDROID;GLES;OPENGL</Platform>
-      <Platform Name="iOS">IOS;GLES;OPENGL</Platform>
-      <Platform Name="Linux">TRACE;LINUX;OPENGL</Platform>
-      <Platform Name="MacOS">MONOMAC;OPENGL</Platform>
+      <Platform Name="Angle">TRACE;ANGLE;GLES;OPENGL;OPENAL</Platform>
+      <Platform Name="iOS">IOS;GLES;OPENGL;OPENAL</Platform>
+      <Platform Name="Linux">TRACE;LINUX;OPENGL;OPENAL</Platform>
+      <Platform Name="MacOS">MONOMAC;OPENGL;OPENAL</Platform>
       <Platform Name="Ouya">TRACE;ANDROID;GLES;OPENGL;OUYA</Platform>
       <Platform Name="PSMobile">PSM</Platform>
       <Platform Name="Windows">TRACE;WINDOWS;DIRECTX;WINDOWS_MEDIA_SESSION</Platform>
       <Platform Name="Windows8">TRACE;NETFX_CORE;WINRT;WINDOWS_STOREAPP;DIRECTX;DIRECTX11_1;WINDOWS_MEDIA_ENGINE</Platform>
-      <Platform Name="WindowsGL">TRACE;WINDOWS;OPENGL</Platform>
+      <Platform Name="WindowsGL">TRACE;WINDOWS;OPENGL;OPENAL</Platform>
       <Platform Name="WindowsPhone">TRACE;SILVERLIGHT;WINDOWS_PHONE;WINRT;DIRECTX</Platform>
+      <Platform Name="Web">TRACE;WEB</Platform>
     </CustomDefinitions>
 
   </Properties>
@@ -53,8 +58,12 @@
       <Link>Tao.Sdl.dll.config</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\ThirdParty\Dependencies\OpenTK.dll.config">
+      <Platforms>Linux,MacOS</Platforms>
+      <Link>OpenTK.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
 
-    
     <!-- Microsoft.Xna.Framework -->
     <Compile Include="BoundingBox.cs" />
     <Compile Include="BoundingFrustum.cs" />
@@ -113,10 +122,10 @@
       <Platforms>Windows8</Platforms>
     </Compile>
     <Compile Include="TextInputEventArgs.cs">
-      <Platforms>Linux,MacOS,Windows,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,MacOS,Windows,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Threading.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,WindowsGL</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,PSMobile,WindowsGL,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="TitleContainer.cs" />
     <Compile Include="Vector2.cs" />
@@ -130,6 +139,9 @@
     <Compile Include="Audio\AudioEmitter.cs" />
     <Compile Include="Audio\AudioEngine.cs" />
     <Compile Include="Audio\AudioListener.cs" />
+    <Compile Include="Audio\AudioLoader.cs">
+      <Platforms>Linux,WindowsGL,Angle</Platforms>
+    </Compile>
     <Compile Include="Audio\AudioStopOptions.cs" />
     <Compile Include="Audio\AudioUtil.cs">
       <Platforms>Android,Ouya,PSMobile</Platforms>
@@ -137,13 +149,22 @@
     <Compile Include="Audio\Cue.cs" />
     <Compile Include="Audio\InstancePlayLimitException.cs" />
     <Compile Include="Audio\MSADPCMToPCM.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,WindowsGL</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,PSMobile,WindowsGL,Web</Platforms>
     </Compile>
     <Compile Include="Audio\NoAudioHardwareException.cs" />
+    <Compile Include="Audio\OALSoundBuffer.cs">
+      <Platforms>Angle,iOS,Linux,MacOS,WindowsGL</Platforms>
+    </Compile>
+    <Compile Include="Audio\OpenALSoundController.cs">
+      <Platforms>Angle,iOS,Linux,MacOS,WindowsGL</Platforms>
+    </Compile>
+    <Compile Include="Audio\OpenALSupport.cs">
+      <Platforms>iOS,MacOS</Platforms>
+    </Compile>
     <Compile Include="Audio\SoundBank.cs" />
     <Compile Include="Audio\SoundEffect.cs" />
     <Compile Include="Audio\SoundEffect.OpenAL.cs">
-      <Platforms>Android,iOS,Ouya,Linux,WindowsGL,MacOS</Platforms>
+      <Platforms>Android,Angle,iOS,Ouya,Linux,WindowsGL,MacOS</Platforms>
     </Compile>
     <Compile Include="Audio\SoundEffect.PSM.cs">
       <Platforms>PSMobile</Platforms>
@@ -151,15 +172,21 @@
     <Compile Include="Audio\SoundEffect.XAudio.cs">
       <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
+    <Compile Include="Audio\SoundEffect.Web.cs">
+      <Platforms>Web</Platforms>
+    </Compile>
     <Compile Include="Audio\SoundEffectInstance.cs" />
     <Compile Include="Audio\SoundEffectInstance.OpenAL.cs">
-      <Platforms>Android,iOS,Ouya,Linux,WindowsGL,MacOS</Platforms>
+      <Platforms>Android,Angle,iOS,Ouya,Linux,WindowsGL,MacOS</Platforms>
     </Compile>
     <Compile Include="Audio\SoundEffectInstance.PSM.cs">
       <Platforms>PSMobile</Platforms>
     </Compile>
     <Compile Include="Audio\SoundEffectInstance.XAudio.cs">
       <Platforms>Windows,Windows8,WindowsPhone</Platforms>
+    </Compile>
+    <Compile Include="Audio\SoundEffectInstance.Web.cs">
+      <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Audio\SoundEffectInstancePool.cs" />
     <Compile Include="Audio\SoundState.cs" />
@@ -189,13 +216,13 @@
     <Compile Include="Content\ContentReaders\DictionaryReader.cs" />
     <Compile Include="Content\ContentReaders\DoubleReader.cs" />
     <Compile Include="Content\ContentReaders\DualTextureEffectReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+		<ExcludePlatforms>PSMobile,Web</ExcludePlatforms>
     </Compile>
     <Compile Include="Content\ContentReaders\EffectMaterialReader.cs" />
     <Compile Include="Content\ContentReaders\EffectReader.cs" />
     <Compile Include="Content\ContentReaders\EnumReader.cs" />
     <Compile Include="Content\ContentReaders\EnvironmentMapEffectReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+		<ExcludePlatforms>PSMobile,Web</ExcludePlatforms>
     </Compile>
     <Compile Include="Content\ContentReaders\ExternalReferenceReader.cs" />
     <Compile Include="Content\ContentReaders\IndexBufferReader.cs" />
@@ -204,24 +231,18 @@
     <Compile Include="Content\ContentReaders\Int64Reader.cs" />
     <Compile Include="Content\ContentReaders\ListReader.cs" />
     <Compile Include="Content\ContentReaders\MatrixReader.cs" />
-    <Compile Include="Content\ContentReaders\ModelReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
+    <Compile Include="Content\ContentReaders\ModelReader.cs" />
     <Compile Include="Content\ContentReaders\NullableReader.cs" />
-    <Compile Include="Content\ContentReaders\PlaneReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
+    <Compile Include="Content\ContentReaders\PlaneReader.cs" />
     <Compile Include="Content\ContentReaders\PointReader.cs" />
-    <Compile Include="Content\ContentReaders\QuaternionReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
+    <Compile Include="Content\ContentReaders\QuaternionReader.cs" />
     <Compile Include="Content\ContentReaders\RayReader.cs" />
     <Compile Include="Content\ContentReaders\RectangleReader.cs" />
     <Compile Include="Content\ContentReaders\ReflectiveReader.cs" />
     <Compile Include="Content\ContentReaders\SByteReader.cs" />
     <Compile Include="Content\ContentReaders\SingleReader.cs" />
     <Compile Include="Content\ContentReaders\SkinnedEffectReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+		<ExcludePlatforms>PSMobile,Web</ExcludePlatforms>
     </Compile>
     <Compile Include="Content\ContentReaders\SongReader.cs" />
     <Compile Include="Content\ContentReaders\SoundEffectReader.cs" />
@@ -229,13 +250,13 @@
     <Compile Include="Content\ContentReaders\StringReader.cs" />
     <Compile Include="Content\ContentReaders\Texture2DReader.cs" />
     <Compile Include="Content\ContentReaders\Texture3DReader.cs">
-      <Platforms>Linux,MacOS,PSMobile,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+      <Platforms>Angle,Linux,MacOS,PSMobile,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Content\ContentReaders\TextureCubeReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Content\ContentReaders\TextureReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Content\ContentReaders\TimeSpanReader.cs" />
     <Compile Include="Content\ContentReaders\UInt16Reader.cs" />
@@ -245,11 +266,9 @@
     <Compile Include="Content\ContentReaders\Vector3Reader.cs" />
     <Compile Include="Content\ContentReaders\Vector4Reader.cs" />
     <Compile Include="Content\ContentReaders\VertexBufferReader.cs" />
-    <Compile Include="Content\ContentReaders\VertexDeclarationReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
+    <Compile Include="Content\ContentReaders\VertexDeclarationReader.cs"/>
     <Compile Include="Content\ContentReaders\VideoReader.cs">
-      <ExcludePlatforms>Linux,PSMobile,Windows,Windows8,WindowsGL,WindowsPhone</ExcludePlatforms>
+      <ExcludePlatforms>Angle,Linux,PSMobile,WindowsGL,WindowsPhone,Web</ExcludePlatforms>
     </Compile>
     <Compile Include="Content\ContentSerializerAttribute.cs" />
     <Compile Include="Content\ContentSerializerIgnoreAttribute.cs" />
@@ -257,96 +276,16 @@
     <Compile Include="Content\ContentTypeReaderManager.cs" />
     <Compile Include="Content\LzxDecoder.cs" />
     <Compile Include="Content\ResourceContentManager.cs">
-      <Platforms>Android,iOS,Linux,Ouya,Windows,WindowsGL</Platforms>
+      <Platforms>Angle,Android,iOS,Linux,Ouya,Windows,WindowsGL</Platforms>
     </Compile>
     
-    
-    <!-- Microsoft.Xna.Framework.GamerServices -->
-    <Compile Include="GamerServices\AchievementCollection.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\Achievement.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\FriendCollection.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\FriendGamer.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GamerCollection.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\Gamer.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GamerDefaults.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GamerPresence.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GamerPresenceMode.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GamerPrivileges.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GamerPrivilegeSetting.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GamerProfile.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GamerServicesComponent.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GamerServicesDispatcher.cs">
-      <Platforms>MacOS,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GamerZone.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\GuideAlreadyVisibleException.cs">
-      <Platforms>MacOS,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\LeaderboardEntry.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\LeaderboardIdentity.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\LeaderboardKey.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\LeaderboardReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\LeaderboardWriter.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\MessageBoxIcon.cs" />
-    <Compile Include="GamerServices\MonoLiveClient.cs">
-      <Platforms>Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\MonoLive.cs">
-      <Platforms>Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\NotificationPosition.cs">
-      <Platforms>iOS</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\PropertyDictionary.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="GamerServices\SignedInGamerCollection.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows8,Windows,WindowsGL</Platforms>
-    </Compile>
-
     
     <!-- Microsoft.Xna.Framework.Graphics -->
     <Compile Include="Graphics\ClearOptions.cs" />
     <Compile Include="Graphics\ColorWriteChannels.cs" />
     <Compile Include="Graphics\CubeMapFace.cs" />
+    <Compile Include="Graphics\DeviceLostException.cs" />
+    <Compile Include="Graphics\DeviceNotResetException.cs" />
     <Compile Include="GraphicsDeviceInformation.cs" />
     <Compile Include="GraphicsDeviceManager.cs" />
     <Compile Include="Graphics\DirectionalLight.cs" />
@@ -356,7 +295,7 @@
     <Compile Include="Graphics\Effect\AlphaTestEffect.cs" />
     <Compile Include="Graphics\Effect\BasicEffect.cs" />
     <Compile Include="Graphics\Effect\DualTextureEffect.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+		<ExcludePlatforms>PSMobile,Web</ExcludePlatforms>
     </Compile>
     <Compile Include="Graphics\Effect\EffectAnnotationCollection.cs" />
     <Compile Include="Graphics\Effect\EffectAnnotation.cs" />
@@ -372,13 +311,13 @@
     <Compile Include="Graphics\Effect\EffectTechniqueCollection.cs" />
     <Compile Include="Graphics\Effect\EffectTechnique.cs" />
     <Compile Include="Graphics\Effect\EnvironmentMapEffect.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+		<ExcludePlatforms>PSMobile,Web</ExcludePlatforms>
     </Compile>
     <Compile Include="Graphics\Effect\IEffectFog.cs" />
     <Compile Include="Graphics\Effect\IEffectLights.cs" />
     <Compile Include="Graphics\Effect\IEffectMatrices.cs" />
     <Compile Include="Graphics\Effect\SkinnedEffect.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+		<ExcludePlatforms>PSMobile,Web</ExcludePlatforms>
     </Compile>
     <Compile Include="Graphics\Effect\SpriteEffect.cs" />
     <Compile Include="Graphics\GraphicsAdapter.cs" />
@@ -388,10 +327,19 @@
       <Platforms>Windows8,Windows,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\GraphicsDevice.OpenGL.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
+    </Compile>
+    <Compile Include="Graphics\GraphicsDevice.OpenGL.FramebufferObject.cs">
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
+    </Compile>
+    <Compile Include="Graphics\GraphicsDevice.OpenGL.RenderbufferObject.cs">
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Graphics\GraphicsDevice.PSM.cs">
       <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\GraphicsDevice.Web.cs">
+      <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\GraphicsDeviceStatus.cs" />
     <Compile Include="Graphics\GraphicsExtensions.cs" />
@@ -399,7 +347,7 @@
     <Compile Include="Graphics\GraphicsResource.cs" />
     <Compile Include="Graphics\IGraphicsDeviceService.cs" />
     <Compile Include="Graphics\ImageEx.cs">
-      <Platforms>Linux,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+      <Platforms>Angle,Linux,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\IRenderTarget.cs" />
     <Compile Include="Graphics\ModelBoneCollection.cs" />
@@ -411,6 +359,7 @@
     <Compile Include="Graphics\ModelMeshPartCollection.cs" />
     <Compile Include="Graphics\ModelMeshPart.cs" />
     <Compile Include="Graphics\MultiSampleType.cs" />
+    <Compile Include="Graphics\NoSuitableGraphicsDeviceException.cs" />
     <Compile Include="Graphics\OcclusionQuery.cs">
       <ExcludePlatforms>iOS,Android,Ouya</ExcludePlatforms>
     </Compile>
@@ -435,10 +384,13 @@
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\RenderTarget2D.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\RenderTarget2D.PSM.cs">
         <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\RenderTarget2D.Web.cs">
+        <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\RenderTarget3D.cs">
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
@@ -456,10 +408,13 @@
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\SamplerStateCollection.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\SamplerStateCollection.PSM.cs">
         <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\SamplerStateCollection.Web.cs">
+        <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\SetDataOptions.cs" />
     <Compile Include="Graphics\Shader\ConstantBufferCollection.cs" />
@@ -468,23 +423,29 @@
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\Shader\ConstantBuffer.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\Shader\ConstantBuffer.PSM.cs">
         <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\Shader\ConstantBuffer.Web.cs">
+        <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\Shader\Shader.cs" />
     <Compile Include="Graphics\Shader\Shader.DirectX.cs">
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\Shader\Shader.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\Shader\Shader.PSM.cs">
         <Platforms>PSMobile</Platforms>
     </Compile>
+    <Compile Include="Graphics\Shader\Shader.Web.cs">
+        <Platforms>Web</Platforms>
+    </Compile>
     <Compile Include="Graphics\Shader\ShaderProgramCache.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Graphics\Shader\ShaderStage.cs" />
     <Compile Include="Graphics\SpriteBatch.cs" />
@@ -502,10 +463,13 @@
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\States\BlendState.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\States\BlendState.PSM.cs">
         <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\States\BlendState.Web.cs">
+        <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\States\CompareFunction.cs" />
     <Compile Include="Graphics\States\CullMode.cs" />
@@ -515,10 +479,13 @@
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\States\DepthStencilState.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\States\DepthStencilState.PSM.cs">
         <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\States\DepthStencilState.Web.cs">
+        <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\States\FillMode.cs" />
     <Compile Include="Graphics\States\RasterizerState.cs" />
@@ -526,19 +493,24 @@
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\States\RasterizerState.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\States\RasterizerState.PSM.cs">
         <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\States\RasterizerState.Web.cs">
+        <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\States\SamplerState.cs" />
     <Compile Include="Graphics\States\SamplerState.DirectX.cs">
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\States\SamplerState.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
-    <Compile Include="Graphics\States\SaveStateMode.cs" />
+    <Compile Include="Graphics\States\SamplerState.Web.cs">
+        <Platforms>Web</Platforms>
+    </Compile>
     <Compile Include="Graphics\States\StencilOperation.cs" />
     <Compile Include="Graphics\States\TargetBlendState.cs" />
     <Compile Include="Graphics\States\TextureAddressMode.cs" />
@@ -552,20 +524,26 @@
       <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\Texture2D.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\Texture2D.PSM.cs">
         <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\Texture2D.Web.cs">
+        <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\Texture3D.cs" />
     <Compile Include="Graphics\Texture3D.DirectX.cs">
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\Texture3D.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\Texture3D.PSM.cs">
         <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\Texture3D.Web.cs">
+        <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\TextureCollection.cs" />
     <Compile Include="Graphics\Texture.cs" />
@@ -573,7 +551,10 @@
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\Texture.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+    </Compile>
+    <Compile Include="Graphics\Texture.Web.cs">
+        <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\Texture.PSM.cs">
         <Platforms>PSMobile</Platforms>
@@ -583,10 +564,13 @@
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\TextureCube.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\TextureCube.PSM.cs">
         <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\TextureCube.Web.cs">
+        <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\TextureUsage.cs" />
     <Compile Include="Graphics\Vertices\BufferUsage.cs" />
@@ -597,10 +581,13 @@
       <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\Vertices\IndexBuffer.OpenGL.cs">
-      <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+      <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\Vertices\IndexBuffer.PSM.cs">
       <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\Vertices\IndexBuffer.Web.cs">
+      <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\Vertices\IndexElementSize.cs" />
     <Compile Include="Graphics\Vertices\IVertexType.cs" />
@@ -610,10 +597,13 @@
       <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\Vertices\VertexBuffer.OpenGL.cs">
-      <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+      <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\Vertices\VertexBuffer.PSM.cs">
       <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Graphics\Vertices\VertexBuffer.Web.cs">
+      <Platforms>Web</Platforms>
     </Compile>
     <Compile Include="Graphics\Vertices\VertexColorTexture.cs" />
     <Compile Include="Graphics\Vertices\VertexDeclarationCache.cs" />
@@ -622,13 +612,15 @@
         <Platforms>Windows,Windows8,WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Graphics\Vertices\VertexDeclaration.OpenGL.cs">
-        <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
+        <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Graphics\Vertices\VertexDeclaration.PSM.cs">
         <Platforms>PSMobile</Platforms>
     </Compile>
+    <Compile Include="Graphics\Vertices\VertexDeclaration.Web.cs">
+        <Platforms>Web</Platforms>
+    </Compile>
     <Compile Include="Graphics\Vertices\VertexElement.cs" />
-    <Compile Include="Graphics\Vertices\VertexElementDeclaration.cs" />
     <Compile Include="Graphics\Vertices\VertexElementFormat.cs" />
     <Compile Include="Graphics\Vertices\VertexElementUsage.cs" />
     <Compile Include="Graphics\Vertices\VertexPosition2ColorTexture.cs" />
@@ -640,15 +632,30 @@
 
     
     <!-- Microsoft.Xna.Framework.Input -->
-    <Compile Include="Input\AccelerometerCapabilities.cs">
-      <Platforms>iOS,Windows8,WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="Input\AccelerometerState.cs">
-      <Platforms>iOS,Linux,MacOS,Windows8,WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="Input\ButtonDefinition.cs" />
     <Compile Include="Input\Buttons.cs" />
     <Compile Include="Input\ButtonState.cs" />
+    <Compile Include="Input\GamePad.cs" />
+    <Compile Include="Input\GamePad.Default.cs">
+      <Platforms>Android,WindowsPhone</Platforms>
+    </Compile>
+    <Compile Include="Input\GamePad.IOS.cs">
+      <Platforms>iOS</Platforms>
+    </Compile>
+    <Compile Include="Input\GamePad.Ouya.cs">
+      <Platforms>Ouya</Platforms>
+    </Compile>
+    <Compile Include="Input\GamePad.PSM.cs">
+      <Platforms>PSMobile</Platforms>
+    </Compile>
+    <Compile Include="Input\GamePad.SDL.cs">
+      <Platforms>Angle,Linux,MacOS,WindowsGL</Platforms>
+    </Compile>
+    <Compile Include="Input\GamePad.Web.cs">
+      <Platforms>Web</Platforms>
+    </Compile>
+    <Compile Include="Input\GamePad.XInput.cs">
+      <Platforms>Windows8,Windows</Platforms>
+    </Compile>
     <Compile Include="Input\GamePadButtons.cs" />
     <Compile Include="Input\GamePadCapabilities.cs" />
     <Compile Include="Input\GamePadDeadZone.cs" />
@@ -658,7 +665,7 @@
     <Compile Include="Input\GamePadTriggers.cs" />
     <Compile Include="Input\GamePadType.cs" />
     <Compile Include="Input\Keyboard.cs">
-      <Platforms>iOS,Linux,MacOS,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+		<ExcludePlatforms>PSMobile,Android,Ouya</ExcludePlatforms>
     </Compile>
     <Compile Include="Input\KeyboardState.cs" />
     <Compile Include="Input\Keys.cs" />
@@ -678,7 +685,7 @@
 
     <!-- Microsoft.Xna.Framework.Media -->
     <Compile Include="Media\MediaLibrary.cs">
-      <Platforms>iOS,MacOS,Windows,WindowsGL</Platforms>
+      <Platforms>Angle,iOS,MacOS,Windows,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Media\MediaManagerState.cs">
       <Platforms>Windows</Platforms>
@@ -694,11 +701,11 @@
       <Platforms>WindowsPhone</Platforms>
     </Compile>
     <Compile Include="Media\MediaPlayer.Default.cs">
-      <Platforms>WindowsGL,Linux,MacOS,iOS,Android,Ouya,PSMobile</Platforms>
+      <Platforms>Angle,WindowsGL,Linux,MacOS,iOS,Android,Ouya,PSMobile,Web</Platforms>
     </Compile>
     <Compile Include="Media\MediaQueue.cs" />
     <Compile Include="Media\MediaSource.cs">
-      <Platforms>iOS,MacOS,Windows,WindowsGL</Platforms>
+      <Platforms>Angle,iOS,MacOS,Windows,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Media\MediaSourceType.cs" />
     <Compile Include="Media\MediaState.cs" />
@@ -711,7 +718,7 @@
     <Compile Include="Media\SongCollection.cs" />
     <Compile Include="Media\Song.cs" />	
     <Compile Include="Media\Song.Default.cs">
-        <Platforms>WindowsGL,MacOS</Platforms>
+        <Platforms>Angle,WindowsGL,MacOS,Web</Platforms>
     </Compile>
     <Compile Include="Media\Song.Android.cs">
         <Platforms>Android,Ouya</Platforms>
@@ -730,7 +737,7 @@
     </Compile>
     <Compile Include="Media\VideoSoundtrackType.cs" />
     <Compile Include="Media\Video.cs">
-      <ExcludePlatforms>Linux,PSMobile,Windows,Windows8,WindowsGL,WindowsPhone</ExcludePlatforms>
+      <ExcludePlatforms>Angle,Linux,PSMobile,WindowsGL,WindowsPhone,Web</ExcludePlatforms>
     </Compile>
     <Compile Include="Media\Video.IOS.cs">
         <Platforms>iOS</Platforms>
@@ -741,17 +748,26 @@
     <Compile Include="Media\Video.Android.cs">
         <Platforms>Android,Ouya</Platforms>
     </Compile>
+    <Compile Include="Media\Video.WMS.cs">
+        <Platforms>Windows</Platforms>
+    </Compile>
     <Compile Include="Media\VideoPlayer.cs">
-      <ExcludePlatforms>Linux,PSMobile,Windows,Windows8,WindowsGL,WindowsPhone</ExcludePlatforms>
+      <ExcludePlatforms>Angle,Linux,PSMobile,WindowsGL,WindowsPhone,Web</ExcludePlatforms>
     </Compile>
     <Compile Include="Media\VideoPlayer.IOS.cs">
         <Platforms>iOS</Platforms>
+    </Compile>
+    <Compile Include="Media\VideoPlayer.WME.cs">
+        <Platforms>Windows8</Platforms>
     </Compile>
     <Compile Include="Media\VideoPlayer.MacOS.cs">
         <Platforms>MacOS</Platforms>
     </Compile>
     <Compile Include="Media\VideoPlayer.Android.cs">
         <Platforms>Android,Ouya</Platforms>
+    </Compile>
+    <Compile Include="Media\VideoPlayer.WMS.cs">
+        <Platforms>Windows</Platforms>
     </Compile>
 
     <!-- Microsoft.Devices.Sensors -->
@@ -784,110 +800,22 @@
     </Compile>
 
     
-    <!-- Microsoft.Xna.Framework.Net -->
-    <Compile Include="Net\AvailableNetworkSessionCollection.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\AvailableNetworkSession.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\CommandEvent.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\CommandEventType.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\CommandGamerJoined.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\CommandGamerLeft.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\CommandGamerStateChange.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\CommandReceiveData.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\CommandSendData.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\CommandSessionStateChange.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\GamerStates.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\ICommand.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\LocalNetworkGamer.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\MonoGamerPeer.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkException.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkGamer.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkMachine.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkMessageType.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkNotAvailableException.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkSession.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkSessionEndReason.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkSessionJoinError.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkSessionJoinException.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkSessionProperties.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkSessionState.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\NetworkSessionType.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\PacketReader.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\PacketWriter.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\QualityOfService.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Net\SendDataOptions.cs">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,PSMobile,Windows,WindowsGL</Platforms>
-    </Compile>
-
-    
     <!-- Microsoft.Xna.Framework.Storage -->
     <Compile Include="Storage\StorageContainer.cs" />
     <Compile Include="Storage\StorageDevice.cs" />
     <Compile Include="Storage\StorageDeviceHelper.cs">
-      <Platforms>Android,iOS,Ouya,PSMobile,Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
+      <Platforms>Android,Angle,iOS,Ouya,PSMobile,Windows8,Windows,WindowsGL,WindowsPhone,Web</Platforms>
     </Compile>
 
     
     <!-- Utility Classes -->
+    <Compile Include="Utilities\AssemblyHelper.cs">
+      <Platforms>Angle,Linux,MacOS,Windows,WindowsGL</Platforms>
+    </Compile>
     <Compile Include="Utilities\Hash.cs" />
     <Compile Include="Utilities\ObjectFactoryWithReset.cs" />
+    <Compile Include="Utilities\FileHelpers.cs" />
+    <Compile Include="Utilities\ReflectionHelpers.cs" />
 
     
     <!-- Android/OUYA Platform -->
@@ -903,23 +831,14 @@
     <Compile Include="Android\AndroidGameWindow.cs">
       <Platforms>Android,Ouya</Platforms>
     </Compile>
+    <Compile Include="Android\MonoGameAndroidGameView.cs">
+      <Platforms>Android,Ouya</Platforms>
+    </Compile>
     <Compile Include="Android\Devices\Sensors\Accelerometer.cs">
       <Platforms>Android,Ouya</Platforms>
     </Compile>
     <Compile Include="Android\Devices\Sensors\Compass.cs">
       <Platforms>Android,Ouya</Platforms>
-    </Compile>
-    <Compile Include="Android\GamerServices\Guide.cs">
-      <Platforms>Android,Ouya</Platforms>
-    </Compile>
-    <Compile Include="Android\GamerServices\MonoGameGamerServicesHelper.cs">
-      <Platforms>Android,Ouya</Platforms>
-    </Compile>
-    <Compile Include="Android\GamerServices\SignedInGamer.cs">
-      <Platforms>Android,Ouya</Platforms>
-    </Compile>
-    <Compile Include="Android\Input\GamePad.cs">
-      <Platforms>Android</Platforms>
     </Compile>
     <Compile Include="Android\Input\Keyboard.cs">
       <Platforms>Android,Ouya</Platforms>
@@ -933,9 +852,6 @@
     <Compile Include="Android\OrientationListener.cs">
       <Platforms>Android,Ouya</Platforms>
     </Compile>
-    <Compile Include="Android\Ouya\Input\GamePad.cs">
-      <Platforms>Ouya</Platforms>
-    </Compile>
     <Compile Include="Android\ResumeManager.cs">
       <Platforms>Android,Ouya</Platforms>
     </Compile>
@@ -945,47 +861,35 @@
 
 
     <!-- Common Desktop Platform -->
-    <Compile Include="Desktop\Audio\AudioLoader.cs">
-      <Platforms>Linux,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Desktop\Audio\OALSoundBuffer.cs">
-      <Platforms>iOS,Linux,MacOS,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Desktop\Audio\OpenALSoundController.cs">
-      <Platforms>iOS,Linux,MacOS,WindowsGL</Platforms>
-    </Compile>
     <Compile Include="Desktop\Input\Axis.cs">
-      <Platforms>Linux,MacOS,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,MacOS,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Desktop\Input\Capabilities.cs">
-      <Platforms>Linux,MacOS,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,MacOS,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Desktop\Input\DPad.cs">
-      <Platforms>Linux,MacOS,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Desktop\Input\GamePad.cs">
-      <Platforms>Linux,MacOS,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,MacOS,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Desktop\Input\Input.cs">
-      <Platforms>Linux,MacOS,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,MacOS,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Desktop\Input\Joystick.cs">
-      <Platforms>Linux,MacOS,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,MacOS,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Desktop\Input\PadConfig.cs">
-      <Platforms>Linux,MacOS,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,MacOS,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Desktop\Input\Settings.cs">
-      <Platforms>Linux,MacOS,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,MacOS,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Desktop\Input\Stick.cs">
-      <Platforms>Linux,MacOS,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,MacOS,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Desktop\OpenTKGamePlatform.cs">
-      <Platforms>Linux,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Desktop\OpenTKGameWindow.cs">
-      <Platforms>Linux,WindowsGL</Platforms>
+      <Platforms>Angle,Linux,WindowsGL</Platforms>
     </Compile>
 
 
@@ -994,27 +898,6 @@
       <Platforms>iOS</Platforms>
     </Compile>
     <Compile Include="iOS\Devices\Sensors\Compass.cs">
-      <Platforms>iOS</Platforms>
-    </Compile>
-    <Compile Include="iOS\Extender.cs">
-      <Platforms>iOS</Platforms>
-    </Compile>
-    <Compile Include="iOS\GamerServices\Guide.cs">
-      <Platforms>iOS</Platforms>
-    </Compile>
-    <Compile Include="iOS\GamerServices\KeyboardInputViewController.cs">
-      <Platforms>iOS</Platforms>
-    </Compile>
-    <Compile Include="iOS\GamerServices\KeyboardInputView.cs">
-      <Platforms>iOS</Platforms>
-    </Compile>
-    <Compile Include="iOS\GamerServices\SignedInGamer.cs">
-      <Platforms>iOS</Platforms>
-    </Compile>
-    <Compile Include="iOS\GamerServices\TextFieldAlertView.cs">
-      <Platforms>iOS</Platforms>
-    </Compile>
-    <Compile Include="iOS\Input\GamePad.cs">
       <Platforms>iOS</Platforms>
     </Compile>
     <Compile Include="iOS\iOSGamePlatform.cs">
@@ -1035,27 +918,12 @@
     <Compile Include="iOS\iOSGameWindow.cs">
       <Platforms>iOS</Platforms>
     </Compile>
-    <Compile Include="iOS\Net\MonoGamePeerPickerControllerDelegate.cs">
-      <Platforms>iOS</Platforms>
-    </Compile>
-    <Compile Include="iOS\Net\MonoGameSessionDelegate.cs">
-      <Platforms>iOS</Platforms>
-    </Compile>
     <Compile Include="iOS\OrientationConverter.cs">
       <Platforms>iOS</Platforms>
     </Compile>
 
     
     <!-- Linux Platform -->
-    <Compile Include="Linux\GamerServices\Guide.cs">
-      <Platforms>Linux</Platforms>
-    </Compile>
-    <Compile Include="Linux\GamerServices\MonoGameGamerServicesHelper.cs">
-      <Platforms>Linux</Platforms>
-    </Compile>
-    <Compile Include="Linux\GamerServices\SignedInGamer.cs">
-      <Platforms>Linux</Platforms>
-    </Compile>
     <Compile Include="Linux\Input\KeyboardUtil.cs">
       <Platforms>Linux</Platforms>
     </Compile>
@@ -1065,24 +933,6 @@
 
 
     <!-- MacOS Platform -->
-    <Compile Include="MacOS\Audio\OpenALSupport.cs">
-      <Platforms>iOS,MacOS</Platforms>
-    </Compile>
-    <Compile Include="MacOS\GamerServices\Guide.cs">
-      <Platforms>MacOS</Platforms>
-    </Compile>
-    <Compile Include="MacOS\GamerServices\MonoGameGamerServicesHelper.cs">
-      <Platforms>MacOS</Platforms>
-    </Compile>
-    <Compile Include="MacOS\GamerServices\MonoGameLocalGamerProfile.cs">
-      <Platforms>MacOS</Platforms>
-    </Compile>
-    <Compile Include="MacOS\GamerServices\SignedInGamer.cs">
-      <Platforms>MacOS</Platforms>
-    </Compile>
-    <Compile Include="MacOS\GamerServices\SigninController.cs">
-      <Platforms>MacOS</Platforms>
-    </Compile>
     <Compile Include="MacOS\GameWindow.cs">
       <Platforms>MacOS</Platforms>
     </Compile>
@@ -1104,15 +954,6 @@
 
 
     <!-- PlayStation Mobile Platform -->
-    <Compile Include="PSSuite\GamerServices\Guide.cs">
-      <Platforms>PSMobile</Platforms>
-    </Compile>
-    <Compile Include="PSSuite\GamerServices\MonoGameGamerServicesHelper.cs">
-      <Platforms>PSMobile</Platforms>
-    </Compile>
-    <Compile Include="PSSuite\GamerServices\SignedInGamer.cs">
-      <Platforms>PSMobile</Platforms>
-    </Compile>
     <Compile Include="PSSuite\Graphics\SpriteBatcher.cs">
       <Platforms>PSMobile</Platforms>
     </Compile>
@@ -1123,9 +964,6 @@
       <Platforms>PSMobile</Platforms>
     </Compile>
     <Compile Include="PSSuite\Input\AccelerometerState.cs">
-      <Platforms>PSMobile</Platforms>
-    </Compile>
-    <Compile Include="PSSuite\Input\GamePad.cs">
       <Platforms>PSMobile</Platforms>
     </Compile>
     <Compile Include="PSSuite\Input\Keyboard.cs">
@@ -1152,12 +990,6 @@
     <Compile Include="Windows8\GameFrameworkViewSource.cs">
       <Platforms>Windows8</Platforms>
     </Compile>
-    <Compile Include="Windows8\GamePad.cs">
-      <Platforms>Windows8,Windows</Platforms>
-    </Compile>
-    <Compile Include="Windows8\GamerServices\SignedInGamer.cs">
-      <Platforms>Windows8</Platforms>
-    </Compile>
     <Compile Include="Windows8\InputEvents.cs">
       <Platforms>Windows8</Platforms>
     </Compile>
@@ -1179,33 +1011,10 @@
     <Compile Include="Windows8\XamlGame.cs">
       <Platforms>Windows8</Platforms>
     </Compile>
-    <Compile Include="Windows8\GamerServices\EventAsync.cs">
-      <Platforms>Windows8</Platforms>
-    </Compile>
-    <Compile Include="Windows8\GamerServices\InputDialog.cs">
-      <Platforms>Windows8</Platforms>
-    </Compile>
-    <Page Include="Themes\generic.xaml">
-        <Platforms>Windows8</Platforms>
-        <Generator>MSBuild:Compile</Generator>
-        <SubType>Designer</SubType>
-    </Page>
 
     <!-- Windows Desktop Platfom -->
-    <Compile Include="Windows\Content\ContentReaders\SoundEffectReader.cs">
-      <Platforms>Windows8,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="Windows\GamerServices\Guide.cs">
-      <Platforms>Windows8,Windows,WindowsGL,WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="Windows\GamerServices\MonoGameGamerServicesHelper.cs">
-      <Platforms>Windows,WindowsGL</Platforms>
-    </Compile>
-    <Compile Include="Windows\GamerServices\SignedInGamer.cs">
-      <Platforms>Windows,WindowsGL</Platforms>
-    </Compile>
     <Compile Include="Windows\Input\KeyboardUtil.cs">
-      <Platforms>WindowsGL</Platforms>
+      <Platforms>Angle,WindowsGL</Platforms>
     </Compile>
     <Compile Include="Windows\WinFormsGameForm.cs">
       <Platforms>Windows</Platforms>
@@ -1216,6 +1025,9 @@
     <Compile Include="Windows\WinFormsGameWindow.cs">
       <Platforms>Windows</Platforms>
     </Compile>
+    <Compile Include="Media\VideoSampleGrabber.cs">
+      <Platforms>Windows</Platforms>
+    </Compile>
 	
 
 	<!-- Windows Phone Platform -->
@@ -1223,9 +1035,6 @@
       <Platforms>WindowsPhone</Platforms>
     </Compile>
     <Compile Include="WindowsPhone\DrawingSurfaceUpdateHandler.cs">
-      <Platforms>WindowsPhone</Platforms>
-    </Compile>
-    <Compile Include="WindowsPhone\GamePad.cs">
       <Platforms>WindowsPhone</Platforms>
     </Compile>
     <Compile Include="WindowsPhone\SurfaceUpdateHandler.cs">
@@ -1241,25 +1050,46 @@
       <Platforms>WindowsPhone</Platforms>
     </Compile>
 
+    <!-- Web Platform -->
+    <Compile Include="Web\WebGamePlatform.cs">
+      <Platforms>Web</Platforms>
+    </Compile>
+    <Compile Include="Web\WebGameWindow.cs">
+      <Platforms>Web</Platforms>
+    </Compile>
+    <Compile Include="Libraries\JSAPI.cs">
+      <Platforms>Web</Platforms>
+    </Compile>
+    <Compile Include="Libraries\JSAPIAccess.cs">
+      <Platforms>Web</Platforms>
+    </Compile>
+    <Content Include="Libraries\MonoGame.Web.js">
+      <Platforms>Web</Platforms>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MonoGame.Framework.manifest.js">
+      <Platforms>Web</Platforms>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
 	
-	<!-- OpenGL Stock Effects -->
+    <!-- OpenGL Stock Effects -->
     <EmbeddedResource Include="Graphics\Effect\Resources\AlphaTestEffect.ogl.mgfxo">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
     </EmbeddedResource>
     <EmbeddedResource Include="Graphics\Effect\Resources\BasicEffect.ogl.mgfxo">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
     </EmbeddedResource>
     <EmbeddedResource Include="Graphics\Effect\Resources\DualTextureEffect.ogl.mgfxo">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
     </EmbeddedResource>
     <EmbeddedResource Include="Graphics\Effect\Resources\EnvironmentMapEffect.ogl.mgfxo">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
     </EmbeddedResource>
     <EmbeddedResource Include="Graphics\Effect\Resources\SkinnedEffect.ogl.mgfxo">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
     </EmbeddedResource>
     <EmbeddedResource Include="Graphics\Effect\Resources\SpriteEffect.ogl.mgfxo">
-      <Platforms>Android,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
+      <Platforms>Android,Angle,iOS,Linux,MacOS,Ouya,WindowsGL</Platforms>
     </EmbeddedResource>
 
 
