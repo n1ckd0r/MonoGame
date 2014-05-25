@@ -276,6 +276,10 @@ namespace Microsoft.Xna.Framework.GamerServices
 		public static Nullable<int> EndShowMessageBox (IAsyncResult result)
 		{
             return (result.AsyncState as ShowMessageBoxDelegate).EndInvoke(result);
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> e9c9fbec226f56ea22b6352200a7591d2429f94c
 		}
 
 		public static void ShowMarketplace (PlayerIndex player)
@@ -430,7 +434,11 @@ namespace Microsoft.Xna.Framework.GamerServices
 				ShowSignIn(1,true);
 			}
 		}
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> e9c9fbec226f56ea22b6352200a7591d2429f94c
         [CLSCompliant(false)]
 		public static void ShowPeerPicker(GKPeerPickerControllerDelegate aPeerPickerControllerDelegate)
 		{
