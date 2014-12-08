@@ -128,7 +128,9 @@ namespace Microsoft.Xna.Framework.Media
             _queue.Add(song);
 			_queue.ActiveSongIndex = 0;
             
-            PlaySong(song);
+            if(!IsMuted) {
+            	PlaySong(song);
+            }
         }
 		
 		public static void Play(SongCollection collection, int index = 0)
@@ -187,7 +189,7 @@ namespace Microsoft.Xna.Framework.Media
 
         public static void Resume()
         {
-            if (State != MediaState.Paused)
+            if (State != MediaState.Paused || IsMuted)
                 return;
 
             PlatformResume();

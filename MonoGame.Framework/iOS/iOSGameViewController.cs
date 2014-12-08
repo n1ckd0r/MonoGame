@@ -81,6 +81,34 @@ namespace Microsoft.Xna.Framework {
 				throw new ArgumentNullException ("platform");
 			_platform = platform;
 			SupportedOrientations = DisplayOrientation.Default;
+
+			NSArray obj = (NSArray)NSBundle.MainBundle.ObjectForInfoDictionary("UISupportedInterfaceOrientations");
+
+			for(int idx = 0; idx < obj.Count;++idx)
+			{
+				string value = obj.GetItem<NSString>(idx).ToString();
+
+				switch(value)
+				{
+				// NOTE: in XNA, Orientation Left is a 90 degree rotation counterclockwise, while on iOS
+                // it is a 90 degree rotation CLOCKWISE. They are BACKWARDS!
+                case "UIInterfaceOrientationLandscapeLeft":
+                    SupportedOrientations |= DisplayOrientation.LandscapeRight;
+                    break;
+
+                case "UIInterfaceOrientationLandscapeRight":
+                    SupportedOrientations |= DisplayOrientation.LandscapeLeft;
+                    break;
+
+                case "UIInterfaceOrientationPortrait":
+                    SupportedOrientations |= DisplayOrientation.Portrait;
+                    break;
+
+                case "UIInterfaceOrientationPortraitUpsideDown":
+                    SupportedOrientations |= DisplayOrientation.PortraitDown;
+                    break;
+				}
+			}
 		}
 
 		public event EventHandler<EventArgs> InterfaceOrientationChanged;
@@ -89,20 +117,8 @@ namespace Microsoft.Xna.Framework {
 
 		public override void LoadView ()
 		{
-			RectangleF frame;
-			if (ParentViewController != null && ParentViewController.View != null) {
-				frame = new RectangleF(PointF.Empty, ParentViewController.View.Frame.Size);
-			} else {
-				UIScreen screen = UIScreen.MainScreen;
-				if (InterfaceOrientation == UIInterfaceOrientation.LandscapeLeft ||
-				    InterfaceOrientation == UIInterfaceOrientation.LandscapeRight) {
-					frame = new RectangleF(0, 0, screen.Bounds.Height, screen.Bounds.Width);
-				} else {
-					frame = new RectangleF(0, 0, screen.Bounds.Width, screen.Bounds.Height);
-				}
-			}
-
-			base.View = new iOSGameView (_platform, frame);
+			RectangleF frame = CalculateFrame();
+			base.View = new iOSGameView(_platform, frame);
 		}
 
 		public new iOSGameView View {
@@ -127,13 +143,16 @@ namespace Microsoft.Xna.Framework {
         
         public override bool ShouldAutorotate ()
         {
-            return _platform.Game.Initialized;
+			return SupportedOrientations.HasFlag(DisplayOrientation.LandscapeLeft) || SupportedOrientations.HasFlag(DisplayOrientation.LandscapeRight) || _platform.Game.Initialized;
         }
         #endregion
 
 		public override void DidRotate (UIInterfaceOrientation fromInterfaceOrientation)
 		{
 			base.DidRotate (fromInterfaceOrientation);
+
+			RectangleF frame = CalculateFrame();
+			base.View.Frame = frame;
 
 			var handler = InterfaceOrientationChanged;
 			if (handler != null)
@@ -146,5 +165,30 @@ namespace Microsoft.Xna.Framework {
             return _platform.Game.graphicsDeviceManager.IsFullScreen;
         }
         #endregion
+
+		private RectangleF CalculateFrame()
+        {
+            RectangleF frame;
+            if (ParentViewController != null && ParentViewController.View != null)
+            {
+                frame = new RectangleF(PointF.Empty, ParentViewController.View.Frame.Size);
+            } 
+            else
+            {
+                UIScreen screen = UIScreen.MainScreen;
+
+                // iOS 7 and older reverses width/height in landscape mode when reporting resolution,
+                // iOS 8+ reports resolution correctly in all cases
+                if (InterfaceOrientation == UIInterfaceOrientation.LandscapeLeft || InterfaceOrientation == UIInterfaceOrientation.LandscapeRight)
+                {
+                    frame = new RectangleF(0, 0, Math.Max(screen.Bounds.Width, screen.Bounds.Height), Math.Min(screen.Bounds.Width, screen.Bounds.Height));
+                } else
+                {
+                    frame = new RectangleF(0, 0, screen.Bounds.Width, screen.Bounds.Height);
+                }
+            }
+
+            return frame;
+        }
     }
 }

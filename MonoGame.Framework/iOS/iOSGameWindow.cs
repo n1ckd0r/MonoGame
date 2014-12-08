@@ -103,9 +103,9 @@ namespace Microsoft.Xna.Framework {
                 if (_viewController is iOSGameViewController)
                 {
                     var currentOrientation = OrientationConverter.ToDisplayOrientation(_viewController.InterfaceOrientation);
-                    int width;
-                    int height;
-
+                    int width = (int)bounds.Width;
+                    int height = (int)bounds.Height;
+                   
                     if (currentOrientation == DisplayOrientation.LandscapeLeft || 
                         currentOrientation == DisplayOrientation.LandscapeRight)
                     {

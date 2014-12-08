@@ -399,6 +399,26 @@ namespace Microsoft.Xna.Framework.GamerServices
                 GamerServicesComponent.LocalNetworkGamer.SignedInGamer.BeginAuthentication(null, null);
             }
         }
+		
+		public static void ShowSignIn(AsyncCallback callback, int paneCount, bool onlineOnly)
+        {
+            AssertInitialised();
+
+            if (paneCount != 1)
+            {
+                new ArgumentException("paneCount Can only be 1 on iPhone");
+                return;
+            }
+
+            if (GamerServicesComponent.LocalNetworkGamer == null)
+            {
+                GamerServicesComponent.LocalNetworkGamer = new LocalNetworkGamer(callback);
+            }
+            else
+            {
+                GamerServicesComponent.LocalNetworkGamer.SignedInGamer.BeginAuthentication(null, null);
+            }
+        }
 
         /// <summary>
         /// Shows guide view controllers, e.g., Game Center view controllers.

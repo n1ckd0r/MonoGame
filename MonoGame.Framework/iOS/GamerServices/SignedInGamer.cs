@@ -144,6 +144,34 @@ namespace Microsoft.Xna.Framework.GamerServices
 			EndAuthentication( result );
 		}
 		
+		public SignedInGamer(AsyncCallback callback)
+		{
+			
+			// Register to receive the GKPlayerAuthenticationDidChangeNotificationName so we are notified when 
+			// Authentication changes
+			NSNotificationCenter.DefaultCenter.AddObserver( new NSString("GKPlayerAuthenticationDidChangeNotificationName"), (notification) => {   
+        													    if (lp !=null && lp.Authenticated)
+																{
+																	this.Gamertag = lp.Alias;
+																	this.DisplayName = lp.PlayerID;	
+														        	// Insert code here to handle a successful authentication.
+																	Gamer.SignedInGamers.Add(this);
+																	// Fire the SignedIn event
+																	OnSignedIn(new SignedInEventArgs(this) );
+																}
+														    	else
+																{
+														        	// Insert code here to clean up any outstanding Game Center-related classes.
+																	Gamer.SignedInGamers.Remove(this);
+																	// Fire the SignedOut event
+																	OnSignedOut(new SignedOutEventArgs(this) );
+																}
+	    													});	
+			
+			var result = BeginAuthentication(callback, null);	
+			EndAuthentication( result );
+		}
+		
 		private void AuthenticationCompletedCallback( IAsyncResult result )
 		{
 			EndAuthentication(result);	

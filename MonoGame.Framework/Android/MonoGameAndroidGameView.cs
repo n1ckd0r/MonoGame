@@ -64,12 +64,16 @@ namespace Microsoft.Xna.Framework
 
         void ISurfaceHolderCallback.SurfaceChanged(ISurfaceHolder holder, Android.Graphics.Format format, int width, int height)
         {
+			//This is a big hack to solve a screen ratio issue on app resume. This will only work for landscape.
+			if(height > width)
+				return;
+			
             SurfaceChanged(holder, format, width, height);
             Android.Util.Log.Debug("MonoGame", "MonoGameAndroidGameView.SurfaceChanged: format = " + format + ", width = " + width + ", height = " + height);
 
             if (_game.GraphicsDevice != null)
-                _game.graphicsDeviceManager.ResetClientBounds();
-        }
+                _game.graphicsDeviceManager.ResetClientBounds();        
+		}
 
         void ISurfaceHolderCallback.SurfaceDestroyed(ISurfaceHolder holder)
         {
@@ -103,7 +107,8 @@ namespace Microsoft.Xna.Framework
                         // DeviceReset events
                         _game.graphicsDeviceManager.OnDeviceReset(EventArgs.Empty);
                         _game.GraphicsDevice.OnDeviceReset();
-
+						
+						 
                         IsResuming = false;
                     });
 

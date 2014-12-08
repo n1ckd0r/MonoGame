@@ -91,6 +91,12 @@ namespace Microsoft.Xna.Framework.GamerServices
 			EndAuthentication( result );
 		}
 		
+		public SignedInGamer(AsyncCallback callback)
+		{		
+			var result = BeginAuthentication(callback, null);	
+			EndAuthentication( result );
+		}
+		
 		private void AuthenticationCompletedCallback( IAsyncResult result )
 		{
 			EndAuthentication(result);	

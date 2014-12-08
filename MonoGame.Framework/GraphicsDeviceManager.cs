@@ -604,6 +604,10 @@ namespace Microsoft.Xna.Framework
                 newClientBounds.Height = GraphicsDevice.DisplayMode.Height;
             }
 
+			//This is a big hack to solve a screen ratio issue on app resume. This will only work for landscape.
+            if(newClientBounds.Height > newClientBounds.Width)
+            	return;
+
             // Ensure buffer size is reported correctly
             _graphicsDevice.PresentationParameters.BackBufferWidth = newClientBounds.Width;
             _graphicsDevice.PresentationParameters.BackBufferHeight = newClientBounds.Height;

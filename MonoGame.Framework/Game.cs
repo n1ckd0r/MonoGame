@@ -412,6 +412,7 @@ namespace Microsoft.Xna.Framework
         public void Run(GameRunBehavior runBehavior)
         {
             AssertNotDisposed();
+			_gameTimer = Stopwatch.StartNew();
             if (!Platform.BeforeRun())
                 return;
 
@@ -421,7 +422,7 @@ namespace Microsoft.Xna.Framework
             }
 
             BeginRun();
-            _gameTimer = Stopwatch.StartNew();
+			
             switch (runBehavior)
             {
             case GameRunBehavior.Asynchronous:

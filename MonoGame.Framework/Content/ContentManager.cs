@@ -43,6 +43,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Linq;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -123,23 +124,15 @@ namespace Microsoft.Xna.Framework.Content
 
         internal static void ReloadGraphicsContent()
         {
-            lock (ContentManagerLock)
+            // Reload the graphic assets of each content manager. 
+            for (int i = ContentManagers.Count - 1; i >= 0; --i)
             {
-                // Reload the graphic assets of each content manager. Also take the
-                // opportunity to prune the list of any finalized content managers.
-                for (int i = ContentManagers.Count - 1; i >= 0; --i)
+                var contentRef = ContentManagers[i];
+                if (contentRef.IsAlive)
                 {
-                    var contentRef = ContentManagers[i];
-                    if (contentRef.IsAlive)
-                    {
-                        var contentManager = (ContentManager)contentRef.Target;
-                        if (contentManager != null)
-                            contentManager.ReloadGraphicsAssets();
-                    }
-                    else
-                    {
-                        ContentManagers.RemoveAt(i);
-                    }
+                    var contentManager = (ContentManager)contentRef.Target;
+                    if (contentManager != null)
+                        contentManager.ReloadGraphicsAssets();
                 }
             }
         }
@@ -558,8 +551,9 @@ namespace Microsoft.Xna.Framework.Content
 
 		protected virtual void ReloadGraphicsAssets()
         {
-            foreach (var asset in LoadedAssets)
+            for(int i=0;i<loadedAssets.Count;i++)
             {
+            	var asset = loadedAssets.ElementAt(i);
                 // This never executes as asset.Key is never null.  This just forces the 
                 // linker to include the ReloadAsset function when AOT compiled.
                 if (asset.Key == null)
@@ -657,7 +651,9 @@ namespace Microsoft.Xna.Framework.Content
 		            disposable.Dispose();
 		    }
 			disposableAssets.Clear();
-		    loadedAssets.Clear();
+		    
+	    	loadedAssets.Clear();
+		    
 		}
 
 		public string RootDirectory

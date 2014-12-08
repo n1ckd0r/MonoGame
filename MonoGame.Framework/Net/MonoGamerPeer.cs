@@ -510,7 +510,7 @@ namespace Microsoft.Xna.Framework.Net
             {                
 #if DEBUG
 		if (peer != null)
-                	return new TimeSpan(0,0,(int)peer.Configuration.SimulatedAverageLatency);
+                	return new TimeSpan(0);
 		else
 			return new TimeSpan(0);
 #else
@@ -521,7 +521,7 @@ namespace Microsoft.Xna.Framework.Net
             {
 #if DEBUG
 		if (peer != null) {
-                	peer.Configuration.SimulatedMinimumLatency = (float)value.TotalSeconds;
+                	//peer.Configuration.SimulatedMinimumLatency = (float)value.TotalSeconds;
 		}
 #endif
             }
@@ -537,7 +537,8 @@ namespace Microsoft.Xna.Framework.Net
             {
 #if DEBUG
 		if (peer != null)
-                	return peer.Configuration.SimulatedLoss;
+					return 0.0f;
+                	//return peer.Configuration.SimulatedLoss;
 		else
 			return 0.0f;
 #else
@@ -548,7 +549,7 @@ namespace Microsoft.Xna.Framework.Net
             {
 #if DEBUG
 		if (peer != null) {
-                	peer.Configuration.SimulatedLoss = value;
+                	//peer.Configuration.SimulatedLoss = value;
 		}
 #endif
             }

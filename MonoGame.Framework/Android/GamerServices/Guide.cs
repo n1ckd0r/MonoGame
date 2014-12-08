@@ -268,7 +268,9 @@ namespace Microsoft.Xna.Framework.GamerServices
 
 		public static void ShowMarketplace (PlayerIndex player )
 		{
-			
+			Intent intent = new Intent(Intent.ActionView);
+			intent.SetData(Android.Net.Uri.Parse("market://details?id=nicholasrapp.bitless"));
+			Game.Activity.StartActivity(intent);
 		}
 
 		public static void Show ()
