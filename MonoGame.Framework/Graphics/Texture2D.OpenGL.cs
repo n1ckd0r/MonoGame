@@ -14,9 +14,9 @@ using MonoMac.Foundation;
 #endif
 
 #if IOS
-using MonoTouch.UIKit;
-using MonoTouch.CoreGraphics;
-using MonoTouch.Foundation;
+using UIKit;
+using CoreGraphics;
+using Foundation;
 #endif
 
 #if OPENGL
@@ -419,7 +419,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				var data = new byte[width * height * 4];
 				
 				var colorSpace = CGColorSpace.CreateDeviceRGB();
-				var bitmapContext = new CGBitmapContext(data, width, height, 8, width * 4, colorSpace, CGBitmapFlags.PremultipliedLast);
+				var bitmapContext = new CGBitmapContext(data, (int)width, (int)height, 8, (int)width * 4, colorSpace, CGImageAlphaInfo.PremultipliedLast);
 				bitmapContext.DrawImage(new RectangleF(0, 0, width, height), cgImage);
 				bitmapContext.Dispose();
 				colorSpace.Dispose();
@@ -427,7 +427,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 Texture2D texture = null;
                 Threading.BlockOnUIThread(() =>
                 {
-				    texture = new Texture2D(graphicsDevice, width, height, false, SurfaceFormat.Color);			
+				    texture = new Texture2D(graphicsDevice, (int)width, (int)height, false, SurfaceFormat.Color);			
     				texture.SetData(data);
                 });
 			
@@ -621,11 +621,9 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             if (this.glTexture < 0)
             {
-#if IOS || ANDROID
-                GL.GenTextures(1, ref this.glTexture);
-#else
+
                 GL.GenTextures(1, out this.glTexture);
-#endif
+
                 GraphicsExtensions.CheckGLError();
 
                 // For best compatibility and to keep the default wrap mode of XNA, only set ClampToEdge if either

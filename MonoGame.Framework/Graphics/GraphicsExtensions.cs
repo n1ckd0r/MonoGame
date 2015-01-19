@@ -810,8 +810,8 @@ namespace Microsoft.Xna.Framework.Graphics
         public static void CheckGLError()
         {
 #if GLES && !ANGLE
-            All error = GL.GetError();
-            if (error != All.False)
+            ErrorCode error = GL.GetError();
+            if (error != ErrorCode.NoError)
                 throw new MonoGameGLException("GL.GetError() returned " + error.ToString());
 #elif OPENGL
             ErrorCode error = GL.GetError();

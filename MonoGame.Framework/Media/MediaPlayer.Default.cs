@@ -5,7 +5,7 @@
 using System;
 
 #if IOS
-using MonoTouch.MediaPlayer;
+using MediaPlayer;
 #endif
 
 namespace Microsoft.Xna.Framework.Media

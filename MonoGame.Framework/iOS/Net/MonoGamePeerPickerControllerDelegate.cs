@@ -43,8 +43,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-using MonoTouch.UIKit;
-using MonoTouch.GameKit;
+using UIKit;
+using GameKit;
 
 using Microsoft.Xna.Framework.GamerServices;
 #endregion Using clause

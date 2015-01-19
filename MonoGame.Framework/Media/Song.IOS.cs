@@ -5,8 +5,8 @@
 using System;
 using System.IO;
 using Microsoft.Xna.Framework.Audio;
-using MonoTouch.Foundation;
-using MonoTouch.AVFoundation;
+using Foundation;
+using AVFoundation;
 
 namespace Microsoft.Xna.Framework.Media
 {

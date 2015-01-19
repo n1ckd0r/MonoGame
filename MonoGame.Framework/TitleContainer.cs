@@ -44,8 +44,8 @@ using System.Text;
 #if WINRT
 using System.Threading.Tasks;
 #elif IOS
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
+using Foundation;
+using UIKit;
 #elif MONOMAC
 using MonoMac.Foundation;
 #elif PSM

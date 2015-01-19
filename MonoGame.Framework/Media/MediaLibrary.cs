@@ -43,8 +43,8 @@ using System.Collections.Generic;
 using System.IO;
 
 #if IOS
-using MonoTouch.Foundation;
-using MonoTouch.MediaPlayer;
+using Foundation;
+using MediaPlayer;
 #endif
 
 namespace Microsoft.Xna.Framework.Media

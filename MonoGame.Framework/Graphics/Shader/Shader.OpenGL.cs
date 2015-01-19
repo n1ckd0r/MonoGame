@@ -74,11 +74,9 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsExtensions.CheckGLError();
 
             var compiled = 0;
-#if GLES && !ANGLE
-			GL.GetShader(_shaderHandle, ShaderParameter.CompileStatus, ref compiled);
-#else
-            GL.GetShader(_shaderHandle, ShaderParameter.CompileStatus, out compiled);
-#endif
+
+            GL.GetShader(_shaderHandle, ShaderParameter.CompileStatus, ref compiled);
+
             GraphicsExtensions.CheckGLError();
             if (compiled == (int)All.False)
             {
@@ -90,7 +88,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (length > 0)
                 {
                     var logBuilder = new StringBuilder(length);
-					GL.GetShaderInfoLog(_shaderHandle, length, ref length, logBuilder);
+					GL.GetShaderInfoLog(_shaderHandle, length, out length, logBuilder);
                     GraphicsExtensions.CheckGLError();
                     log = logBuilder.ToString();
                 }

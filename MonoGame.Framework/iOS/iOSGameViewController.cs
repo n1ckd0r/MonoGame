@@ -68,8 +68,8 @@ non-infringement.
 using System;
 using System.Drawing;
 
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
+using UIKit;
+using Foundation;
 
 namespace Microsoft.Xna.Framework {
 	class iOSGameViewController : UIViewController {
@@ -84,9 +84,9 @@ namespace Microsoft.Xna.Framework {
 
 			NSArray obj = (NSArray)NSBundle.MainBundle.ObjectForInfoDictionary("UISupportedInterfaceOrientations");
 
-			for(int idx = 0; idx < obj.Count;++idx)
+			for(int idx = 0; idx < (int)obj.Count;++idx)
 			{
-				string value = obj.GetItem<NSString>(idx).ToString();
+				string value = obj.GetItem<NSString>((nuint)idx).ToString();
 
 				switch(value)
 				{
@@ -171,7 +171,8 @@ namespace Microsoft.Xna.Framework {
             RectangleF frame;
             if (ParentViewController != null && ParentViewController.View != null)
             {
-                frame = new RectangleF(PointF.Empty, ParentViewController.View.Frame.Size);
+                frame = new RectangleF(PointF.Empty, new SizeF((float)ParentViewController.View.Frame.Size.Width, 
+                	(float)ParentViewController.View.Frame.Size.Height));
             } 
             else
             {
@@ -181,10 +182,10 @@ namespace Microsoft.Xna.Framework {
                 // iOS 8+ reports resolution correctly in all cases
                 if (InterfaceOrientation == UIInterfaceOrientation.LandscapeLeft || InterfaceOrientation == UIInterfaceOrientation.LandscapeRight)
                 {
-                    frame = new RectangleF(0, 0, Math.Max(screen.Bounds.Width, screen.Bounds.Height), Math.Min(screen.Bounds.Width, screen.Bounds.Height));
+                    frame = new RectangleF(0, 0, (float)Math.Max(screen.Bounds.Width, screen.Bounds.Height), (float)Math.Min(screen.Bounds.Width, screen.Bounds.Height));
                 } else
                 {
-                    frame = new RectangleF(0, 0, screen.Bounds.Width, screen.Bounds.Height);
+                    frame = new RectangleF(0, 0, (float)screen.Bounds.Width, (float)screen.Bounds.Height);
                 }
             }
 
